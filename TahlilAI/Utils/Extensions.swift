@@ -158,6 +158,17 @@ extension Double {
     }
 }
 
+// MARK: - Test Category Enum
+enum TestCategory: String, CaseIterable {
+    case blood = "Kan"
+    case urine = "İdrar"
+    case biochemistry = "Biyokimya"
+    case hematology = "Hematoloji"
+    case immunology = "İmmünoloji"
+    case microbiology = "Mikrobiyoloji"
+    case other = "Diğer"
+}
+
 // MARK: - Array Extensions
 extension Array where Element == LabTest {
     var abnormalTests: [LabTest] {
@@ -169,6 +180,8 @@ extension Array where Element == LabTest {
     }
     
     func groupedByCategory() -> [TestCategory: [LabTest]] {
-        return Dictionary(grouping: self) { $0.category }
+        return Dictionary(grouping: self) { test in
+            TestCategory(rawValue: test.category) ?? .other
+        }
     }
 } 

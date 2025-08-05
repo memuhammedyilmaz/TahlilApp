@@ -43,7 +43,7 @@ class LabTestService: LabTestServiceProtocol {
     
     func deleteTestResult(_ result: LabTestResult) {
         var results = getAllTestResults()
-        results.removeAll { $0.id == result.id }
+        results.removeAll { $0.date == result.date }
         
         if let encoded = try? JSONEncoder().encode(results) {
             userDefaults.set(encoded, forKey: testResultsKey)
@@ -59,7 +59,7 @@ class LabTestService: LabTestServiceProtocol {
     
     func getTestResultsByCategory(_ category: TestCategory) -> [LabTestResult] {
         return getAllTestResults().filter { result in
-            result.tests.contains { $0.category == category }
+            result.tests.contains { $0.category == category.rawValue }
         }
     }
     
@@ -73,16 +73,16 @@ class LabTestService: LabTestServiceProtocol {
     
     func getMockTestData() -> [LabTest] {
         return [
-            LabTest(name: "Hemoglobin", value: 14.2, unit: "g/dL", normalRange: 12.0...16.0, category: .blood),
-            LabTest(name: "White Blood Cells", value: 7.5, unit: "K/μL", normalRange: 4.5...11.0, category: .blood),
-            LabTest(name: "Platelets", value: 250, unit: "K/μL", normalRange: 150...450, category: .blood),
-            LabTest(name: "Glucose", value: 95, unit: "mg/dL", normalRange: 70...100, category: .biochemistry),
-            LabTest(name: "Creatinine", value: 0.9, unit: "mg/dL", normalRange: 0.6...1.2, category: .biochemistry),
-            LabTest(name: "Sodium", value: 140, unit: "mEq/L", normalRange: 135...145, category: .biochemistry),
-            LabTest(name: "Potassium", value: 4.0, unit: "mEq/L", normalRange: 3.5...5.0, category: .biochemistry),
-            LabTest(name: "Cholesterol", value: 180, unit: "mg/dL", normalRange: 0...200, category: .biochemistry),
-            LabTest(name: "Triglycerides", value: 150, unit: "mg/dL", normalRange: 0...150, category: .biochemistry),
-            LabTest(name: "pH", value: 6.5, unit: "", normalRange: 4.5...8.0, category: .urine)
+            LabTest(name: "Hemoglobin", value: 14.2, unit: "g/dL", normalRange: "12.0-16.0", category: TestCategory.blood.rawValue),
+            LabTest(name: "White Blood Cells", value: 7.5, unit: "K/μL", normalRange: "4.5-11.0", category: TestCategory.blood.rawValue),
+            LabTest(name: "Platelets", value: 250, unit: "K/μL", normalRange: "150-450", category: TestCategory.blood.rawValue),
+            LabTest(name: "Glucose", value: 95, unit: "mg/dL", normalRange: "70-100", category: TestCategory.biochemistry.rawValue),
+            LabTest(name: "Creatinine", value: 0.9, unit: "mg/dL", normalRange: "0.6-1.2", category: TestCategory.biochemistry.rawValue),
+            LabTest(name: "Sodium", value: 140, unit: "mEq/L", normalRange: "135-145", category: TestCategory.biochemistry.rawValue),
+            LabTest(name: "Potassium", value: 4.0, unit: "mEq/L", normalRange: "3.5-5.0", category: TestCategory.biochemistry.rawValue),
+            LabTest(name: "Cholesterol", value: 180, unit: "mg/dL", normalRange: "0-200", category: TestCategory.biochemistry.rawValue),
+            LabTest(name: "Triglycerides", value: 150, unit: "mg/dL", normalRange: "0-150", category: TestCategory.biochemistry.rawValue),
+            LabTest(name: "pH", value: 6.5, unit: "", normalRange: "4.5-8.0", category: TestCategory.urine.rawValue)
         ]
     }
 } 

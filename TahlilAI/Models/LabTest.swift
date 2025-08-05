@@ -7,73 +7,35 @@
 
 import Foundation
 
-// MARK: - Lab Test Protocol
-protocol LabTestProtocol {
-    var id: String { get }
-    var name: String { get }
-    var value: Double { get }
-    var unit: String { get }
-    var normalRange: ClosedRange<Double> { get }
-    var date: Date { get }
-    var isAbnormal: Bool { get }
-    var category: TestCategory { get }
-}
-
-// MARK: - Test Category
-enum TestCategory: String, CaseIterable, Codable {
-    case blood = "blood"
-    case urine = "urine"
-    case biochemistry = "biochemistry"
-    case hematology = "hematology"
-    case immunology = "immunology"
-    case other = "other"
-
-    var displayName: String {
-        switch self {
-        case .blood: return "Kan"
-        case .urine: return "İdrar"
-        case .biochemistry: return "Biyokimya"
-        case .hematology: return "Hematoloji"
-        case .immunology: return "İmmünoloji"
-        case .other: return "Diğer"
-        }
-    }
-
-    var color: String {
-        switch self {
-        case .blood: return "#FF6B6B"
-        case .urine: return "#4ECDC4"
-        case .biochemistry: return "#45B7D1"
-        case .hematology: return "#96CEB4"
-        case .immunology: return "#FFEAA7"
-        case .other: return "#DDA0DD"
-        }
-    }
-}
-
-// MARK: - Lab Test Implementation
-struct LabTest: LabTestProtocol, Codable {
+// MARK: - Lab Test Model
+struct LabTest: Codable {
     let id: String
     let name: String
     let value: Double
     let unit: String
-    let normalRange: ClosedRange<Double>
+    let normalRange: String
     let date: Date
-    let category: TestCategory
-
+    let category: String
+    
     var isAbnormal: Bool {
-        return !normalRange.contains(value)
+        // Simple logic to determine if test is abnormal
+        // In a real app, you'd parse the normalRange string and compare
+        let rangeComponents = normalRange.components(separatedBy: "-")
+        if rangeComponents.count == 2,
+           let minValue = Double(rangeComponents[0].trimmingCharacters(in: .whitespaces)),
+           let maxValue = Double(rangeComponents[1].trimmingCharacters(in: .whitespaces)) {
+            return value < minValue || value > maxValue
+        }
+        return false
     }
-
-    init(
-        id: String = UUID().uuidString,
-        name: String,
-        value: Double,
-        unit: String,
-        normalRange: ClosedRange<Double>,
-        date: Date = Date(),
-        category: TestCategory
-    ) {
+    
+    init(id: String = UUID().uuidString,
+         name: String,
+         value: Double,
+         unit: String,
+         normalRange: String,
+         date: Date = Date(),
+         category: String) {
         self.id = id
         self.name = name
         self.value = value
@@ -84,25 +46,15 @@ struct LabTest: LabTestProtocol, Codable {
     }
 }
 
-// MARK: - Lab Test Result
+// MARK: - Lab Test Result Model
 struct LabTestResult: Codable {
-    let id: String
     let date: Date
     let tests: [LabTest]
-    let imageURL: String?
     let notes: String?
-
-    init(
-        id: String = UUID().uuidString,
-        date: Date = Date(),
-        tests: [LabTest],
-        imageURL: String? = nil,
-        notes: String? = nil
-    ) {
-        self.id = id
+    
+    init(date: Date = Date(), tests: [LabTest], notes: String? = nil) {
         self.date = date
         self.tests = tests
-        self.imageURL = imageURL
         self.notes = notes
     }
 } 

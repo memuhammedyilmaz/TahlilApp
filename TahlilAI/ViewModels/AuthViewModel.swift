@@ -52,9 +52,9 @@ class AuthViewModel: BaseViewModel, AuthViewModelProtocol {
                     height: 175.0,
                     weight: 70.0,
                     age: 30,
-                    credits: 10,
+                    credits: 100,
                     isPremium: false,
-                    theme: .system
+                    theme: "system"
                 )
                 self.userService.saveUser(user)
                 self.onAuthSuccess?()
@@ -103,9 +103,9 @@ class AuthViewModel: BaseViewModel, AuthViewModelProtocol {
                 height: 0.0,
                 weight: 0.0,
                 age: 0,
-                credits: 10,
+                credits: 100,
                 isPremium: false,
-                theme: .system
+                theme: "system"
             )
             self.userService.saveUser(user)
             self.onAuthSuccess?()

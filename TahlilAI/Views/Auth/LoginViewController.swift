@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 class LoginViewController: UIViewController {
     
@@ -13,281 +14,476 @@ class LoginViewController: UIViewController {
     private let scrollView = UIScrollView()
     private let contentView = UIView()
     
+    private let backgroundGradientView: UIView = {
+        let view = UIView()
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [
+            UIColor.systemBlue.cgColor,
+            UIColor.systemPurple.cgColor
+        ]
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        view.layer.addSublayer(gradientLayer)
+        return view
+    }()
+    
     private let logoImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "heart.text.square.fill")
-        imageView.tintColor = .primaryGradientStart
+        imageView.image = UIImage(systemName: "testtube.2")
+        imageView.tintColor = .white
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "🏥 TahlilAI"
-        label.font = .systemFont(ofSize: 36, weight: .heavy)
-        label.textColor = .primaryGradientStart
+        label.text = "TahlilAI"
+        label.font = .systemFont(ofSize: 36, weight: .bold)
+        label.textColor = .white
         label.textAlignment = .center
         return label
     }()
     
     private let subtitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "AI destekli sağlık analizi"
-        label.font = .systemFont(ofSize: 18, weight: .medium)
-        label.textColor = .textSecondary
+        label.text = "Laboratuvar sonuçlarınızı yapay zeka ile analiz edin"
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .white.withAlphaComponent(0.9)
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
     }()
     
+    private let cardView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        view.layer.cornerRadius = 24
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOffset = CGSize(width: 0, height: 10)
+        view.layer.shadowOpacity = 0.1
+        view.layer.shadowRadius = 20
+        return view
+    }()
+    
+    private let welcomeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Hoş Geldiniz"
+        label.font = .systemFont(ofSize: 24, weight: .bold)
+        label.textColor = .label
+        label.textAlignment = .center
+        return label
+    }()
+    
+    private let emailContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemGray6
+        view.layer.cornerRadius = 12
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor.systemGray4.cgColor
+        return view
+    }()
+    
+    private let emailIconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "envelope")
+        imageView.tintColor = .systemGray
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     private let emailTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "📧 E-posta"
+        textField.placeholder = "E-posta adresiniz"
         textField.font = .systemFont(ofSize: 16)
-        textField.borderStyle = .none
-        textField.backgroundColor = .cardBackground
-        textField.roundCorners(16)
         textField.keyboardType = .emailAddress
         textField.autocapitalizationType = .none
         textField.autocorrectionType = .no
-        textField.addShadow(color: .primaryGradientStart, opacity: 0.1, radius: 8)
-        
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 20, height: 55))
-        textField.leftView = paddingView
-        textField.leftViewMode = .always
-        
         return textField
+    }()
+    
+    private let passwordContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemGray6
+        view.layer.cornerRadius = 12
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor.systemGray4.cgColor
+        return view
+    }()
+    
+    private let passwordIconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "lock")
+        imageView.tintColor = .systemGray
+        imageView.contentMode = .scaleAspectFit
+        return imageView
     }()
     
     private let passwordTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "🔒 Şifre"
+        textField.placeholder = "Şifreniz"
         textField.font = .systemFont(ofSize: 16)
-        textField.borderStyle = .none
-        textField.backgroundColor = .cardBackground
-        textField.roundCorners(16)
         textField.isSecureTextEntry = true
-        textField.addShadow(color: .primaryGradientStart, opacity: 0.1, radius: 8)
-        
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 20, height: 55))
-        textField.leftView = paddingView
-        textField.leftViewMode = .always
-        
         return textField
+    }()
+    
+    private let showPasswordButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "eye.slash"), for: .normal)
+        button.tintColor = .systemGray
+        return button
     }()
     
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("🚀 Giriş Yap", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        button.backgroundColor = .primaryGradientStart
+        button.setTitle("Giriş Yap", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
-        button.roundCorners(20)
-        button.addShadow(color: .primaryGradientStart, opacity: 0.3, radius: 15)
+        button.layer.cornerRadius = 16
+        button.layer.shadowColor = UIColor.systemBlue.cgColor
+        button.layer.shadowOffset = CGSize(width: 0, height: 4)
+        button.layer.shadowOpacity = 0.3
+        button.layer.shadowRadius = 8
         return button
+    }()
+    
+    private let dividerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemGray4
+        return view
     }()
     
     private let registerButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("✨ Hesabınız yok mu? Kayıt olun", for: .normal)
+        button.setTitle("Hesap oluştur", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        button.setTitleColor(.primaryGradientStart, for: .normal)
+        button.setTitleColor(.systemBlue, for: .normal)
         return button
     }()
     
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(style: .large)
-        indicator.color = .white
-        indicator.hidesWhenStopped = true
-        return indicator
-    }()
-    
     // MARK: - Properties
-    private var viewModel: AuthViewModelProtocol
-    
-    // MARK: - Initialization
-    init(viewModel: AuthViewModelProtocol = AuthViewModel()) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    private let userService = UserService()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupConstraints()
-        setupBindings()
         setupActions()
+        setupGradient()
+        setupKeyboardHandling()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setupGradient()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        addKeyboardObservers()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        removeKeyboardObservers()
     }
     
     // MARK: - Setup Methods
     private func setupUI() {
-        // Modern gradient background
-        view.addGradientBackground(
-            startColor: .backgroundPrimary,
-            endColor: .backgroundSecondary,
-            startPoint: CGPoint(x: 0, y: 0),
-            endPoint: CGPoint(x: 1, y: 1)
-        )
+        view.backgroundColor = .systemBackground
         
+        view.addSubview(backgroundGradientView)
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         
-        [logoImageView, titleLabel, subtitleLabel, emailTextField, 
-         passwordTextField, loginButton, registerButton, loadingIndicator].forEach {
+        [logoImageView, titleLabel, subtitleLabel, cardView].forEach {
             contentView.addSubview($0)
         }
         
-        loginButton.addSubview(loadingIndicator)
-    }
-    
-    private func setupConstraints() {
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        logoImageView.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        emailTextField.translatesAutoresizingMaskIntoConstraints = false
-        passwordTextField.translatesAutoresizingMaskIntoConstraints = false
-        loginButton.translatesAutoresizingMaskIntoConstraints = false
-        registerButton.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            // ScrollView
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            // ContentView
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            
-            // LogoImageView
-            logoImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 60),
-            logoImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            logoImageView.widthAnchor.constraint(equalToConstant: 80),
-            logoImageView.heightAnchor.constraint(equalToConstant: 80),
-            
-            // TitleLabel
-            titleLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // SubtitleLabel
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-            subtitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            subtitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            
-            // EmailTextField
-            emailTextField.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 40),
-            emailTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            emailTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            emailTextField.heightAnchor.constraint(equalToConstant: 50),
-            
-            // PasswordTextField
-            passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 16),
-            passwordTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            passwordTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            passwordTextField.heightAnchor.constraint(equalToConstant: 50),
-            
-            // LoginButton
-            loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 32),
-            loginButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            loginButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            loginButton.heightAnchor.constraint(equalToConstant: 50),
-            
-            // RegisterButton
-            registerButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 20),
-            registerButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            registerButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -40),
-            
-            // LoadingIndicator
-            loadingIndicator.centerXAnchor.constraint(equalTo: loginButton.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: loginButton.centerYAnchor)
-        ])
-    }
-    
-    private func setupBindings() {
-        viewModel.onLoadingChanged = { [weak self] isLoading in
-            DispatchQueue.main.async {
-                self?.updateLoadingState(isLoading)
-            }
+        [welcomeLabel, emailContainerView, passwordContainerView, loginButton, dividerView, registerButton].forEach {
+            cardView.addSubview($0)
         }
         
-        viewModel.onAuthSuccess = { [weak self] in
-            DispatchQueue.main.async {
-                self?.navigateToMain()
-            }
+        [emailIconImageView, emailTextField].forEach {
+            emailContainerView.addSubview($0)
         }
         
-        viewModel.onAuthFailure = { [weak self] error in
-            DispatchQueue.main.async {
-                self?.showError(error)
-            }
+        [passwordIconImageView, passwordTextField, showPasswordButton].forEach {
+            passwordContainerView.addSubview($0)
         }
     }
     
-    private func setupActions() {
-        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
-        registerButton.addTarget(self, action: #selector(registerButtonTapped), for: .touchUpInside)
-        
+    private func setupGradient() {
+        if let gradientLayer = backgroundGradientView.layer.sublayers?.first as? CAGradientLayer {
+            gradientLayer.frame = backgroundGradientView.bounds
+        }
+    }
+    
+    private func setupKeyboardHandling() {
         // Add tap gesture to dismiss keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
-    }
-    
-    // MARK: - Actions
-    @objc private func loginButtonTapped() {
-        guard let email = emailTextField.text, !email.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty else {
-            showError("Lütfen tüm alanları doldurun")
-            return
-        }
         
-        viewModel.login(email: email, password: password)
+        // Set text field delegates
+        emailTextField.delegate = self
+        passwordTextField.delegate = self
     }
     
-    @objc private func registerButtonTapped() {
-        let registerVC = RegisterViewController(viewModel: viewModel)
-        navigationController?.pushViewController(registerVC, animated: true)
+    private func addKeyboardObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
+    private func removeKeyboardObservers() {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        
+        let keyboardHeight = keyboardFrame.height
+        let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        
+        scrollView.contentInset = contentInsets
+        scrollView.scrollIndicatorInsets = contentInsets
+        
+        // Always scroll to show the card view properly when keyboard appears
+        let cardViewFrame = cardView.convert(cardView.bounds, to: scrollView)
+        let scrollPoint = CGPoint(x: 0, y: max(0, cardViewFrame.origin.y - 50))
+        scrollView.setContentOffset(scrollPoint, animated: true)
+    }
+    
+    @objc private func keyboardWillHide(notification: NSNotification) {
+        scrollView.contentInset = UIEdgeInsets.zero
+        scrollView.scrollIndicatorInsets = UIEdgeInsets.zero
+        scrollView.setContentOffset(CGPoint.zero, animated: true)
     }
     
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
     
-    // MARK: - Helper Methods
-    private func updateLoadingState(_ isLoading: Bool) {
-        loginButton.isEnabled = !isLoading
-        loginButton.alpha = isLoading ? 0.7 : 1.0
+    private func getActiveTextField() -> UITextField? {
+        if emailTextField.isFirstResponder {
+            return emailTextField
+        } else if passwordTextField.isFirstResponder {
+            return passwordTextField
+        }
+        return nil
+    }
+    
+    private func setupConstraints() {
+        backgroundGradientView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         
-        if isLoading {
-            loadingIndicator.startAnimating()
-            loginButton.setTitle("", for: .normal)
-        } else {
-            loadingIndicator.stopAnimating()
-            loginButton.setTitle("Giriş Yap", for: .normal)
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalToSuperview()
+        }
+        
+        logoImageView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(40)
+            make.centerX.equalToSuperview()
+            make.width.height.equalTo(70)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(logoImageView.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+        
+        subtitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(8)
+            make.leading.trailing.equalToSuperview().inset(40)
+        }
+        
+        cardView.snp.makeConstraints { make in
+            make.top.equalTo(subtitleLabel.snp.bottom).offset(24)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview().offset(-20)
+        }
+        
+        welcomeLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(24)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+        
+        emailContainerView.snp.makeConstraints { make in
+            make.top.equalTo(welcomeLabel.snp.bottom).offset(24)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(56)
+        }
+        
+        emailIconImageView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(20)
+        }
+        
+        emailTextField.snp.makeConstraints { make in
+            make.leading.equalTo(emailIconImageView.snp.trailing).offset(12)
+            make.trailing.equalToSuperview().offset(-16)
+            make.centerY.equalToSuperview()
+        }
+        
+        passwordContainerView.snp.makeConstraints { make in
+            make.top.equalTo(emailContainerView.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(56)
+        }
+        
+        passwordIconImageView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(20)
+        }
+        
+        passwordTextField.snp.makeConstraints { make in
+            make.leading.equalTo(passwordIconImageView.snp.trailing).offset(12)
+            make.trailing.equalTo(showPasswordButton.snp.leading).offset(-12)
+            make.centerY.equalToSuperview()
+        }
+        
+        showPasswordButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-16)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(24)
+        }
+        
+        loginButton.snp.makeConstraints { make in
+            make.top.equalTo(passwordContainerView.snp.bottom).offset(24)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(56)
+        }
+        
+        dividerView.snp.makeConstraints { make in
+            make.top.equalTo(loginButton.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(1)
+        }
+        
+        registerButton.snp.makeConstraints { make in
+            make.top.equalTo(dividerView.snp.bottom).offset(20)
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-24)
         }
     }
     
-    private func showError(_ message: String) {
+    private func setupActions() {
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        registerButton.addTarget(self, action: #selector(registerButtonTapped), for: .touchUpInside)
+        showPasswordButton.addTarget(self, action: #selector(showPasswordButtonTapped), for: .touchUpInside)
+        
+        // Add button press animations
+        [loginButton, registerButton, showPasswordButton].forEach { button in
+            button.addTarget(self, action: #selector(buttonTouchDown(_:)), for: .touchDown)
+            button.addTarget(self, action: #selector(buttonTouchUp(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+        }
+    }
+    
+    // MARK: - Actions
+    @objc private func loginButtonTapped() {
+        guard let email = emailTextField.text, !email.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty else {
+            showAlert(message: "Lütfen tüm alanları doldurun")
+            return
+        }
+        
+        // Add loading state
+        loginButton.setTitle("Giriş yapılıyor...", for: .normal)
+        loginButton.isEnabled = false
+        
+        // Simulate network delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            // Check if user exists
+            if let user = self.userService.getCurrentUser() {
+                // Navigate to main app
+                let mainTabBarController = MainTabBarController()
+                mainTabBarController.modalPresentationStyle = .fullScreen
+                self.present(mainTabBarController, animated: true)
+            } else {
+                self.showAlert(message: "Kullanıcı bulunamadı")
+                self.loginButton.setTitle("Giriş Yap", for: .normal)
+                self.loginButton.isEnabled = true
+            }
+        }
+    }
+    
+    @objc private func registerButtonTapped() {
+        let registerVC = RegisterViewController()
+        registerVC.modalPresentationStyle = .fullScreen
+        present(registerVC, animated: true)
+    }
+    
+    @objc private func showPasswordButtonTapped() {
+        passwordTextField.isSecureTextEntry.toggle()
+        let imageName = passwordTextField.isSecureTextEntry ? "eye.slash" : "eye"
+        showPasswordButton.setImage(UIImage(systemName: imageName), for: .normal)
+    }
+    
+    @objc private func buttonTouchDown(_ button: UIButton) {
+        UIView.animate(withDuration: 0.1) {
+            button.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+        }
+    }
+    
+    @objc private func buttonTouchUp(_ button: UIButton) {
+        UIView.animate(withDuration: 0.1) {
+            button.transform = CGAffineTransform.identity
+        }
+    }
+    
+    // MARK: - Helper Methods
+    private func showAlert(message: String) {
         let alert = UIAlertController(title: "Hata", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         present(alert, animated: true)
     }
+}
+
+// MARK: - UITextFieldDelegate
+extension LoginViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == emailTextField {
+            passwordTextField.becomeFirstResponder()
+        } else if textField == passwordTextField {
+            textField.resignFirstResponder()
+            loginButtonTapped()
+        }
+        return true
+    }
     
-    private func navigateToMain() {
-        let mainTabBarController = MainTabBarController()
-        mainTabBarController.modalPresentationStyle = .fullScreen
-        present(mainTabBarController, animated: true)
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        // Add visual feedback for active text field
+        if let containerView = textField.superview {
+            containerView.layer.borderColor = UIColor.systemBlue.cgColor
+            containerView.layer.borderWidth = 2
+        }
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        // Remove visual feedback
+        if let containerView = textField.superview {
+            containerView.layer.borderColor = UIColor.systemGray4.cgColor
+            containerView.layer.borderWidth = 1
+        }
     }
 } 

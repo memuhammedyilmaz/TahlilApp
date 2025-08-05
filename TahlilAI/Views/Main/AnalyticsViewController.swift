@@ -11,10 +11,7 @@ import SnapKit
 class AnalyticsViewController: UIViewController {
     
     // MARK: - UI Components
-    private let scrollView = UIScrollView()
     private let contentView = UIView()
-    
-
     
     private let dateRangeSegmentedControl: UISegmentedControl = {
         let control = UISegmentedControl()
@@ -105,7 +102,6 @@ class AnalyticsViewController: UIViewController {
         setupUI()
         setupConstraints()
         setupFilterControls()
-
         setupActions()
         loadMockDataIfNeeded()
     }
@@ -124,8 +120,7 @@ class AnalyticsViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
         
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
+        view.addSubview(contentView)
         
         [dateRangeSegmentedControl,
          chartContainerView, statsContainerView].forEach {
@@ -146,14 +141,9 @@ class AnalyticsViewController: UIViewController {
     }
     
     private func setupConstraints() {
-        scrollView.snp.makeConstraints { make in
+        contentView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.bottom.equalToSuperview()
-        }
-        
-        contentView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-            make.width.equalToSuperview()
         }
         
         dateRangeSegmentedControl.snp.makeConstraints { make in
@@ -165,7 +155,7 @@ class AnalyticsViewController: UIViewController {
         chartContainerView.snp.makeConstraints { make in
             make.top.equalTo(dateRangeSegmentedControl.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(300)
+            make.height.equalTo((view.frame.height - 200) / 2 - 75) // Ekranın yarısı kadar yükseklik
         }
         
         chartTitleLabel.snp.makeConstraints { make in
@@ -180,7 +170,7 @@ class AnalyticsViewController: UIViewController {
         statsContainerView.snp.makeConstraints { make in
             make.top.equalTo(chartContainerView.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(200)
+            make.height.equalTo((view.frame.height - 200) / 2 - 75) // Ekranın yarısı kadar yükseklik
         }
         
         statsTitleLabel.snp.makeConstraints { make in
@@ -200,10 +190,6 @@ class AnalyticsViewController: UIViewController {
         normalTestsLabel.snp.makeConstraints { make in
             make.top.equalTo(abnormalTestsLabel.snp.bottom).offset(8)
             make.centerX.equalToSuperview()
-        }
-        
-        statsContainerView.snp.makeConstraints { make in
-            make.bottom.equalToSuperview().offset(-20)
         }
     }
     

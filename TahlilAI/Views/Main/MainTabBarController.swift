@@ -27,6 +27,7 @@ class MainTabBarController: UITabBarController {
         private func setupViewControllers() {
         let scanVC = UINavigationController(rootViewController: ScanViewController())
         let analyticsVC = UINavigationController(rootViewController: AnalyticsViewController())
+        let premiumVC = UINavigationController(rootViewController: PremiumViewController())
         let settingsVC = UINavigationController(rootViewController: SettingsViewController())
 
         scanVC.tabBarItem = UITabBarItem(
@@ -41,12 +42,18 @@ class MainTabBarController: UITabBarController {
             selectedImage: UIImage(systemName: "chart.line.uptrend.xyaxis")
         )
 
+        premiumVC.tabBarItem = UITabBarItem(
+            title: "Premium",
+            image: UIImage(systemName: "crown.fill"),
+            selectedImage: UIImage(systemName: "crown.fill")
+        )
+
         settingsVC.tabBarItem = UITabBarItem(
             title: "Ayarlar",
             image: UIImage(systemName: "gearshape.fill"),
             selectedImage: UIImage(systemName: "gearshape.fill")
         )
 
-        viewControllers = [scanVC, analyticsVC, settingsVC]
+        viewControllers = [scanVC, analyticsVC, premiumVC, settingsVC]
     }
 } 
