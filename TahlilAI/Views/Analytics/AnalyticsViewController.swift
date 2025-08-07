@@ -103,7 +103,7 @@ class AnalyticsViewController: UIViewController {
         setupConstraints()
         setupFilterControls()
         setupActions()
-        loadMockDataIfNeeded()
+        loadTestResults()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -224,68 +224,12 @@ class AnalyticsViewController: UIViewController {
     }
     
     // MARK: - Helper Methods
-    private func loadMockDataIfNeeded() {
-        let existingResults = labTestService.getAllTestResults()
-        
-        if existingResults.isEmpty {
-            createMockTestResults()
-        }
-        
-        loadTestResults()
-    }
-    
-    private func createMockTestResults() {
-        let calendar = Calendar.current
-        let now = Date()
-        
-        // Create mock data for the last 30 days
-        for i in 0..<10 {
-            let date = calendar.date(byAdding: .day, value: -i * 3, to: now) ?? now
-            
-            // Select random tests for each result
-            let allTests = labTestService.getMockTestData()
-            let selectedTests = Array(allTests.shuffled().prefix(Int.random(in: 8...15)))
-            
-            // Make some tests abnormal
-            var modifiedTests: [LabTest] = []
-            for test in selectedTests {
-                var modifiedTest = test
-                if Bool.random() && Bool.random() { // 25% chance to make abnormal
-                    let variation = Double.random(in: 0.8...1.3)
-                    modifiedTest = LabTest(
-                        id: test.id,
-                        name: test.name,
-                        value: test.value * variation,
-                        unit: test.unit,
-                        normalRange: test.normalRange,
-                        date: date,
-                        category: test.category
-                    )
-                } else {
-                    modifiedTest = LabTest(
-                        id: test.id,
-                        name: test.name,
-                        value: test.value,
-                        unit: test.unit,
-                        normalRange: test.normalRange,
-                        date: date,
-                        category: test.category
-                    )
-                }
-                modifiedTests.append(modifiedTest)
-            }
-            
-            let testResult = LabTestResult(
-                date: date,
-                tests: modifiedTests,
-                notes: i % 3 == 0 ? "Rutin kontrol" : nil
-            )
-            
-            labTestService.saveTestResult(testResult)
-        }
-    }
+
     
     private func loadTestResults() {
+        // Clear any existing mock data
+        labTestService.clearAllTestResults()
+        
         testResults = labTestService.getAllTestResults()
         applyFilters()
         updateStats()
@@ -331,26 +275,49 @@ class AnalyticsViewController: UIViewController {
         let abnormalTests = allTests.filter { $0.isAbnormal }.count
         let normalTests = totalTests - abnormalTests
         
-        totalTestsLabel.text = "Toplam Test: \(totalTests)"
-        abnormalTestsLabel.text = "Anormal Test: \(abnormalTests)"
-        normalTestsLabel.text = "Normal Test: \(normalTests)"
+        if totalTests == 0 {
+            totalTestsLabel.text = "Toplam Test: 0"
+            abnormalTestsLabel.text = "Anormal Test: 0"
+            normalTestsLabel.text = "Normal Test: 0"
+        } else {
+            totalTestsLabel.text = "Toplam Test: \(totalTests)"
+            abnormalTestsLabel.text = "Anormal Test: \(abnormalTests)"
+            normalTestsLabel.text = "Normal Test: \(normalTests)"
+        }
     }
     
     private func updateChart() {
-        // Simple chart visualization - in a real app, you'd use a charting library
+        // Clear existing chart
         chartView.subviews.forEach { $0.removeFromSuperview() }
         
-        let chartLabel = UILabel()
-        chartLabel.text = "📊 Test Sonuçları Grafiği\n\nBu alanda gerçek bir grafik kütüphanesi\n(Charts, Core Graphics vb.) kullanılabilir"
-        chartLabel.font = .systemFont(ofSize: 14)
-        chartLabel.textColor = .secondaryLabel
-        chartLabel.textAlignment = .center
-        chartLabel.numberOfLines = 0
+        let allTests = testResults.flatMap { $0.tests }
         
-        chartView.addSubview(chartLabel)
-        chartLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(16)
+        if allTests.isEmpty {
+            let emptyLabel = UILabel()
+            emptyLabel.text = "📊 Test Sonuçları Grafiği\n\nHenüz test sonucu bulunmuyor\n\nBu alanda gerçek bir grafik kütüphanesi\n(Charts, Core Graphics vb.) kullanılabilir"
+            emptyLabel.font = .systemFont(ofSize: 14)
+            emptyLabel.textColor = .secondaryLabel
+            emptyLabel.textAlignment = .center
+            emptyLabel.numberOfLines = 0
+            
+            chartView.addSubview(emptyLabel)
+            emptyLabel.snp.makeConstraints { make in
+                make.center.equalToSuperview()
+                make.leading.trailing.equalToSuperview().inset(16)
+            }
+        } else {
+            let chartLabel = UILabel()
+            chartLabel.text = "📊 Test Sonuçları Grafiği\n\nBu alanda gerçek bir grafik kütüphanesi\n(Charts, Core Graphics vb.) kullanılabilir"
+            chartLabel.font = .systemFont(ofSize: 14)
+            chartLabel.textColor = .secondaryLabel
+            chartLabel.textAlignment = .center
+            chartLabel.numberOfLines = 0
+            
+            chartView.addSubview(chartLabel)
+            chartLabel.snp.makeConstraints { make in
+                make.center.equalToSuperview()
+                make.leading.trailing.equalToSuperview().inset(16)
+            }
         }
     }
 }

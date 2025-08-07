@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
 
 class RegisterViewController: UIViewController {
     
@@ -220,6 +221,8 @@ class RegisterViewController: UIViewController {
     
     // MARK: - Properties
     private let userService = UserService()
+    private let firebaseAuthService = FirebaseAuthService()
+    private let viewModel = RegisterViewModel()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -229,6 +232,7 @@ class RegisterViewController: UIViewController {
         setupActions()
         setupGradient()
         setupKeyboardHandling()
+        setupViewModel()
     }
     
     override func viewDidLayoutSubviews() {
@@ -514,6 +518,38 @@ class RegisterViewController: UIViewController {
         }
     }
     
+    private func setupViewModel() {
+        viewModel.onRegisterSuccess = { [weak self] in
+            DispatchQueue.main.async {
+                // Navigate to main app
+                let mainTabBarController = MainTabBarController()
+                mainTabBarController.modalPresentationStyle = .fullScreen
+                self?.present(mainTabBarController, animated: true)
+            }
+        }
+        
+        viewModel.onRegisterFailure = { [weak self] errorMessage in
+            DispatchQueue.main.async {
+                self?.showAlert(message: errorMessage)
+                self?.registerButton.setTitle("Hesap Oluştur", for: .normal)
+                self?.registerButton.isEnabled = true
+            }
+        }
+        
+        // Observe loading state
+        viewModel.onLoadingChanged = { [weak self] isLoading in
+            DispatchQueue.main.async {
+                if isLoading {
+                    self?.registerButton.setTitle("Hesap oluşturuluyor...", for: .normal)
+                    self?.registerButton.isEnabled = false
+                } else {
+                    self?.registerButton.setTitle("Hesap Oluştur", for: .normal)
+                    self?.registerButton.isEnabled = true
+                }
+            }
+        }
+    }
+    
     // MARK: - Actions
     @objc private func registerButtonTapped() {
         guard let name = nameTextField.text, !name.isEmpty,
@@ -524,31 +560,8 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        guard password == confirmPassword else {
-            showAlert(message: "Şifreler eşleşmiyor")
-            return
-        }
-        
-        guard password.count >= 6 else {
-            showAlert(message: "Şifre en az 6 karakter olmalıdır")
-            return
-        }
-        
-        // Add loading state
-        registerButton.setTitle("Hesap oluşturuluyor...", for: .normal)
-        registerButton.isEnabled = false
-        
-        // Simulate network delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            // Create user and save
-            let user = User(name: name, email: email)
-            self.userService.saveUser(user)
-            
-            // Navigate to main app
-            let mainTabBarController = MainTabBarController()
-            mainTabBarController.modalPresentationStyle = .fullScreen
-            self.present(mainTabBarController, animated: true)
-        }
+        // Use ViewModel for registration
+        viewModel.register(name: name, email: email, password: password, confirmPassword: confirmPassword)
     }
     
     @objc private func loginButtonTapped() {
@@ -584,6 +597,48 @@ class RegisterViewController: UIViewController {
         let alert = UIAlertController(title: "Hata", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         present(alert, animated: true)
+    }
+    
+    private func handleAuthError(_ error: Error) {
+        let errorMessage: String
+        
+        // Convert to NSError to get the error code
+        let nsError = error as NSError
+        
+        // Firebase Auth error codes
+        switch nsError.code {
+        case 17008: // Invalid email
+            errorMessage = "Geçersiz e-posta adresi"
+        case 17026: // Weak password
+            errorMessage = "Şifre çok zayıf. En az 6 karakter kullanın"
+        case 17007: // Email already in use
+            errorMessage = "Bu e-posta adresi zaten kullanımda"
+        case 17010: // Too many requests
+            errorMessage = "Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin"
+        case 17020: // Network error
+            errorMessage = "Ağ bağlantısı hatası. Lütfen internet bağlantınızı kontrol edin"
+        case 17006: // Operation not allowed
+            errorMessage = "E-posta/şifre ile kayıt etkin değil"
+        default:
+            // Debug: Print the actual error for troubleshooting
+            print("Firebase Auth Error - Code: \(nsError.code), Description: \(error.localizedDescription)")
+            
+            // Try to match based on error description as fallback
+            let errorDescription = error.localizedDescription.lowercased()
+            if errorDescription.contains("email") || errorDescription.contains("e-posta") || errorDescription.contains("invalid") {
+                errorMessage = "Geçersiz e-posta adresi"
+            } else if errorDescription.contains("password") || errorDescription.contains("şifre") || errorDescription.contains("weak") {
+                errorMessage = "Şifre çok zayıf. En az 6 karakter kullanın"
+            } else if errorDescription.contains("already") || errorDescription.contains("zaten") || errorDescription.contains("in use") {
+                errorMessage = "Bu e-posta adresi zaten kullanımda"
+            } else if errorDescription.contains("network") || errorDescription.contains("ağ") || errorDescription.contains("connection") {
+                errorMessage = "Ağ bağlantısı hatası. Lütfen internet bağlantınızı kontrol edin"
+            } else {
+                errorMessage = "Hesap oluşturulurken bir hata oluştu. Lütfen bilgilerinizi kontrol edin."
+            }
+        }
+        
+        showAlert(message: errorMessage)
     }
 }
 

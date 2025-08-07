@@ -81,7 +81,7 @@ class PremiumViewController: UIViewController {
     
     private let priceLabel: UILabel = {
         let label = UILabel()
-        label.text = "₺29.99"
+        label.text = "₺19.99"
         label.font = .systemFont(ofSize: 32, weight: .bold)
         label.textColor = .accentGreen
         label.textAlignment = .center

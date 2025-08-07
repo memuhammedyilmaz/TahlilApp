@@ -16,7 +16,7 @@ protocol LabTestServiceProtocol {
     func getTestResultsByDate(_ date: Date) -> [LabTestResult]
     func getTestResultsByCategory(_ category: TestCategory) -> [LabTestResult]
     func analyzeImage(_ image: UIImage, completion: @escaping (Result<[LabTest], Error>) -> Void)
-    func getMockTestData() -> [LabTest]
+    func clearAllTestResults()
 }
 
 // MARK: - Lab Test Service Implementation
@@ -30,6 +30,10 @@ class LabTestService: LabTestServiceProtocol {
             return []
         }
         return results.sorted { $0.date > $1.date }
+    }
+    
+    func clearAllTestResults() {
+        userDefaults.removeObject(forKey: testResultsKey)
     }
     
     func saveTestResult(_ result: LabTestResult) {
@@ -64,25 +68,9 @@ class LabTestService: LabTestServiceProtocol {
     }
     
     func analyzeImage(_ image: UIImage, completion: @escaping (Result<[LabTest], Error>) -> Void) {
-        // Mock implementation - in real app, this would use AI/ML to analyze the image
+        // TODO: Implement AI/ML image analysis
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            let mockTests = self.getMockTestData()
-            completion(.success(mockTests))
+            completion(.failure(NSError(domain: "LabTestService", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI analysis not implemented yet"])))
         }
-    }
-    
-    func getMockTestData() -> [LabTest] {
-        return [
-            LabTest(name: "Hemoglobin", value: 14.2, unit: "g/dL", normalRange: "12.0-16.0", category: TestCategory.blood.rawValue),
-            LabTest(name: "White Blood Cells", value: 7.5, unit: "K/μL", normalRange: "4.5-11.0", category: TestCategory.blood.rawValue),
-            LabTest(name: "Platelets", value: 250, unit: "K/μL", normalRange: "150-450", category: TestCategory.blood.rawValue),
-            LabTest(name: "Glucose", value: 95, unit: "mg/dL", normalRange: "70-100", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Creatinine", value: 0.9, unit: "mg/dL", normalRange: "0.6-1.2", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Sodium", value: 140, unit: "mEq/L", normalRange: "135-145", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Potassium", value: 4.0, unit: "mEq/L", normalRange: "3.5-5.0", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Cholesterol", value: 180, unit: "mg/dL", normalRange: "0-200", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Triglycerides", value: 150, unit: "mg/dL", normalRange: "0-150", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "pH", value: 6.5, unit: "", normalRange: "4.5-8.0", category: TestCategory.urine.rawValue)
-        ]
     }
 } 

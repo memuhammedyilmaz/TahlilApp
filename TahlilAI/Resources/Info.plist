@@ -23,5 +23,7 @@
 	<string>Tahlil sonuçlarınızı fotoğraflamak için kamera erişimi gereklidir.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Tahlil sonuçlarınızı galeriden seçmek için fotoğraf galerisi erişimi gereklidir.</string>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 </dict>
 </plist>

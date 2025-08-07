@@ -327,44 +327,15 @@ class ScanViewController: UIViewController {
     
     // MARK: - Helper Methods
     private func startAnalysis(image: UIImage) {
-        // Mock analysis - in real app, this would call the AI service
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.showResults()
-            self.userService.useCredits(1)
-            self.updateCreditsLabel()
-        }
-    }
-    
-    private func getMockTestData() -> [LabTest] {
-        return [
-            LabTest(name: "Hemoglobin", value: 14.2, unit: "g/dL", normalRange: "12.0-16.0", category: TestCategory.blood.rawValue),
-            LabTest(name: "White Blood Cells", value: 7.5, unit: "K/μL", normalRange: "4.5-11.0", category: TestCategory.blood.rawValue),
-            LabTest(name: "Platelets", value: 250, unit: "K/μL", normalRange: "150-450", category: TestCategory.blood.rawValue),
-            LabTest(name: "Glucose", value: 95, unit: "mg/dL", normalRange: "70-100", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Creatinine", value: 0.9, unit: "mg/dL", normalRange: "0.6-1.2", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Cholesterol", value: 180, unit: "mg/dL", normalRange: "0-200", category: TestCategory.biochemistry.rawValue),
-            LabTest(name: "Triglycerides", value: 150, unit: "mg/dL", normalRange: "0-150", category: TestCategory.biochemistry.rawValue)
-        ]
+        // TODO: Implement AI analysis
+        showError("AI analiz özelliği henüz aktif değil")
     }
     
 
     
     private func showResults() {
-        // Save test results first
-        let mockTests = getMockTestData()
-        let testResult = LabTestResult(
-            date: Date(),
-            tests: mockTests,
-            notes: "Fotoğraf analizi"
-        )
-        
-        let labTestService = LabTestService()
-        labTestService.saveTestResult(testResult)
-        
-        // Open HistoryViewController directly
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.openHistoryViewController()
-        }
+        // TODO: Show actual analysis results
+        showError("Sonuçlar henüz mevcut değil")
     }
     
     private func saveTestResults() {

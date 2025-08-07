@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
 
 class LoginViewController: UIViewController {
     
@@ -163,6 +164,8 @@ class LoginViewController: UIViewController {
     
     // MARK: - Properties
     private let userService = UserService()
+    private let firebaseAuthService = FirebaseAuthService()
+    private let viewModel = LoginViewModel()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -172,6 +175,7 @@ class LoginViewController: UIViewController {
         setupActions()
         setupGradient()
         setupKeyboardHandling()
+        setupViewModel()
     }
     
     override func viewDidLayoutSubviews() {
@@ -399,6 +403,38 @@ class LoginViewController: UIViewController {
         }
     }
     
+    private func setupViewModel() {
+        viewModel.onLoginSuccess = { [weak self] in
+            DispatchQueue.main.async {
+                // Navigate to main app
+                let mainTabBarController = MainTabBarController()
+                mainTabBarController.modalPresentationStyle = .fullScreen
+                self?.present(mainTabBarController, animated: true)
+            }
+        }
+        
+        viewModel.onLoginFailure = { [weak self] errorMessage in
+            DispatchQueue.main.async {
+                self?.showAlert(message: errorMessage)
+                self?.loginButton.setTitle("Giriş Yap", for: .normal)
+                self?.loginButton.isEnabled = true
+            }
+        }
+        
+        // Observe loading state
+        viewModel.onLoadingChanged = { [weak self] isLoading in
+            DispatchQueue.main.async {
+                if isLoading {
+                    self?.loginButton.setTitle("Giriş yapılıyor...", for: .normal)
+                    self?.loginButton.isEnabled = false
+                } else {
+                    self?.loginButton.setTitle("Giriş Yap", for: .normal)
+                    self?.loginButton.isEnabled = true
+                }
+            }
+        }
+    }
+    
     // MARK: - Actions
     @objc private func loginButtonTapped() {
         guard let email = emailTextField.text, !email.isEmpty,
@@ -407,24 +443,8 @@ class LoginViewController: UIViewController {
             return
         }
         
-        // Add loading state
-        loginButton.setTitle("Giriş yapılıyor...", for: .normal)
-        loginButton.isEnabled = false
-        
-        // Simulate network delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            // Check if user exists
-            if let user = self.userService.getCurrentUser() {
-                // Navigate to main app
-                let mainTabBarController = MainTabBarController()
-                mainTabBarController.modalPresentationStyle = .fullScreen
-                self.present(mainTabBarController, animated: true)
-            } else {
-                self.showAlert(message: "Kullanıcı bulunamadı")
-                self.loginButton.setTitle("Giriş Yap", for: .normal)
-                self.loginButton.isEnabled = true
-            }
-        }
+        // Use ViewModel for login
+        viewModel.login(email: email, password: password)
     }
     
     @objc private func registerButtonTapped() {
@@ -456,6 +476,50 @@ class LoginViewController: UIViewController {
         let alert = UIAlertController(title: "Hata", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         present(alert, animated: true)
+    }
+    
+    private func handleAuthError(_ error: Error) {
+        let errorMessage: String
+        
+        // Convert to NSError to get the error code
+        let nsError = error as NSError
+        
+        // Firebase Auth error codes (trying different code ranges)
+        switch nsError.code {
+        case 17009, 17999: // Wrong password (different Firebase versions)
+            errorMessage = "Yanlış şifre"
+        case 17008, 17998: // Invalid email
+            errorMessage = "Geçersiz e-posta adresi"
+        case 17011, 17997: // User not found
+            errorMessage = "Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı"
+        case 17010, 17996: // Too many requests
+            errorMessage = "Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin"
+        case 17020, 17995: // Network error
+            errorMessage = "Ağ bağlantısı hatası. Lütfen internet bağlantınızı kontrol edin"
+        case 17005, 17994: // User disabled
+            errorMessage = "Hesabınız devre dışı bırakılmış"
+        case 17006, 17993: // Operation not allowed
+            errorMessage = "E-posta/şifre ile giriş etkin değil"
+        default:
+            // Debug: Print the actual error for troubleshooting
+            print("Firebase Auth Error - Code: \(nsError.code), Description: \(error.localizedDescription)")
+            
+            // Try to match based on error description as fallback
+            let errorDescription = error.localizedDescription.lowercased()
+            if errorDescription.contains("password") || errorDescription.contains("şifre") || errorDescription.contains("wrong") {
+                errorMessage = "Yanlış şifre"
+            } else if errorDescription.contains("email") || errorDescription.contains("e-posta") || errorDescription.contains("invalid") {
+                errorMessage = "Geçersiz e-posta adresi"
+            } else if errorDescription.contains("user") || errorDescription.contains("kullanıcı") || errorDescription.contains("not found") {
+                errorMessage = "Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı"
+            } else if errorDescription.contains("network") || errorDescription.contains("ağ") || errorDescription.contains("connection") {
+                errorMessage = "Ağ bağlantısı hatası. Lütfen internet bağlantınızı kontrol edin"
+            } else {
+                errorMessage = "Giriş yapılırken bir hata oluştu. Lütfen bilgilerinizi kontrol edin."
+            }
+        }
+        
+        showAlert(message: errorMessage)
     }
 }
 

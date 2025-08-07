@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -17,20 +18,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(windowScene: windowScene)
         
-        // Check if user is logged in
-        let userService = UserService()
-        if userService.getCurrentUser() != nil {
-            // User is logged in, show main app
-            let mainTabBarController = MainTabBarController()
-            window?.rootViewController = mainTabBarController
-        } else {
-            // User is not logged in, show login screen
-            let loginVC = LoginViewController()
-            let navController = UINavigationController(rootViewController: loginVC)
-            window?.rootViewController = navController
-        }
-        
+        // Show launch screen first
+        let launchScreenVC = LaunchScreenViewController()
+        window?.rootViewController = launchScreenVC
         window?.makeKeyAndVisible()
+        
+        // After a short delay, check KVKK consent and authentication
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // First check KVKK consent
+            if !KVKKManager.shared.hasUserConsented() {
+                // Show KVKK consent form
+                let kvkkVC = KVKKViewController()
+                kvkkVC.onConsentGiven = {
+                    // After consent, check authentication
+                    self.checkAuthenticationAndNavigate()
+                }
+                kvkkVC.onConsentDeclined = {
+                    // User declined, exit app
+                    exit(0)
+                }
+                self.window?.rootViewController = kvkkVC
+            } else {
+                // KVKK consent already given, check authentication
+                self.checkAuthenticationAndNavigate()
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -60,7 +72,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
     }
-
+    
+    // MARK: - Helper Methods
+    private func checkAuthenticationAndNavigate() {
+        // Check if user is logged in with Firebase
+        let firebaseAuthService = FirebaseAuthService()
+        if firebaseAuthService.isUserLoggedIn() {
+            // User is logged in, show main app
+            let mainTabBarController = MainTabBarController()
+            window?.rootViewController = mainTabBarController
+        } else {
+            // User is not logged in, show login screen
+            let loginVC = LoginViewController()
+            let navController = UINavigationController(rootViewController: loginVC)
+            window?.rootViewController = navController
+        }
+    }
 
 }
 

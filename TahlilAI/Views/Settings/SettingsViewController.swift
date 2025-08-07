@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
 
 class SettingsViewController: UIViewController {
     
@@ -17,6 +18,7 @@ class SettingsViewController: UIViewController {
     
     // MARK: - Properties
     private let userService = UserService()
+    private let firebaseAuthService = FirebaseAuthService()
     private var currentUser: User?
     
     private let settingsSections = [
@@ -28,7 +30,8 @@ class SettingsViewController: UIViewController {
         SettingsSection(title: "Uygulama", items: [
             SettingsItem(title: "Tema", icon: "paintbrush", type: .navigation),
             SettingsItem(title: "Bildirimler", icon: "bell", type: .navigation),
-            SettingsItem(title: "Gizlilik", icon: "hand.raised", type: .navigation)
+            SettingsItem(title: "Gizlilik", icon: "hand.raised", type: .navigation),
+            SettingsItem(title: "KVKK İzni", icon: "doc.text", type: .navigation)
         ]),
         SettingsSection(title: "Hakkında", items: [
             SettingsItem(title: "Sürüm", icon: "info.circle", type: .info, detail: "1.0.0"),
@@ -99,6 +102,9 @@ class SettingsViewController: UIViewController {
         case "Gizlilik":
             // Navigate to privacy
             break
+        case "KVKK İzni":
+            showKVKKSettings()
+            break
         case "Lisans":
             // Navigate to license
             break
@@ -115,14 +121,73 @@ class SettingsViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
         alert.addAction(UIAlertAction(title: "Çıkış Yap", style: .destructive) { _ in
+            // Firebase sign out
+            let success = self.firebaseAuthService.signOut()
+            
+            // Clear local data
             self.userService.deleteUser()
             
-            let loginVC = LoginViewController()
-            let navController = UINavigationController(rootViewController: loginVC)
-            navController.modalPresentationStyle = .fullScreen
-            self.present(navController, animated: true)
+            if success {
+                let loginVC = LoginViewController()
+                let navController = UINavigationController(rootViewController: loginVC)
+                navController.modalPresentationStyle = .fullScreen
+                self.present(navController, animated: true)
+            } else {
+                self.showAlert(message: "Çıkış yapılırken bir hata oluştu")
+            }
         })
         
+        present(alert, animated: true)
+    }
+    
+    private func showKVKKSettings() {
+        let alert = UIAlertController(title: "KVKK İzni", message: nil, preferredStyle: .actionSheet)
+        
+        // Show current consent status
+        let consentStatus = KVKKManager.shared.getConsentStatus()
+        alert.message = consentStatus.description
+        
+        // Add actions
+        alert.addAction(UIAlertAction(title: "İzni Geri Al", style: .destructive) { _ in
+            self.revokeKVKKConsent()
+        })
+        
+        alert.addAction(UIAlertAction(title: "Verilerimi Sil", style: .destructive) { _ in
+            self.deleteUserData()
+        })
+        
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    
+    private func revokeKVKKConsent() {
+        let alert = UIAlertController(title: "KVKK İzni Geri Al", message: "KVKK izninizi geri almak istediğinizden emin misiniz? Bu işlem uygulamadan çıkış yapmanıza neden olacaktır.", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Geri Al", style: .destructive) { _ in
+            KVKKManager.shared.revokeConsent()
+            self.logout()
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func deleteUserData() {
+        let alert = UIAlertController(title: "Veri Silme", message: "Tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz. Devam etmek istediğinizden emin misiniz?", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Sil", style: .destructive) { _ in
+            KVKKManager.shared.deleteUserData()
+            self.logout()
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func showAlert(message: String) {
+        let alert = UIAlertController(title: "Hata", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         present(alert, animated: true)
     }
 }

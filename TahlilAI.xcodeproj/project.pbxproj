@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		525331192E44CB510069C044 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 525331182E44CB510069C044 /* FirebaseAuth */; };
+		5253311B2E44CB510069C044 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 5253311A2E44CB510069C044 /* FirebaseFirestore */; };
 		52DB4B0D2E412E8900C8F364 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 52DB4B0C2E412E8900C8F364 /* SnapKit */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +43,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				52DB4B0D2E412E8900C8F364 /* SnapKit in Frameworks */,
+				525331192E44CB510069C044 /* FirebaseAuth in Frameworks */,
+				5253311B2E44CB510069C044 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +88,8 @@
 			name = TahlilAI;
 			packageProductDependencies = (
 				52DB4B0C2E412E8900C8F364 /* SnapKit */,
+				525331182E44CB510069C044 /* FirebaseAuth */,
+				5253311A2E44CB510069C044 /* FirebaseFirestore */,
 			);
 			productName = TahlilAI;
 			productReference = 5226CA072E39434000476E62 /* TahlilAI.app */;
@@ -115,6 +121,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				52DB4B0B2E412E8900C8F364 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				525331172E44CB510069C044 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5226CA082E39434000476E62 /* Products */;
@@ -356,6 +363,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		525331172E44CB510069C044 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.1.0;
+			};
+		};
 		52DB4B0B2E412E8900C8F364 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -367,6 +382,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		525331182E44CB510069C044 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 525331172E44CB510069C044 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		5253311A2E44CB510069C044 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 525331172E44CB510069C044 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
 		52DB4B0C2E412E8900C8F364 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52DB4B0B2E412E8900C8F364 /* XCRemoteSwiftPackageReference "SnapKit" */;

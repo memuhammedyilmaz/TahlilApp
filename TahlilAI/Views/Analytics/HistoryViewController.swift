@@ -175,6 +175,9 @@ class HistoryViewController: UIViewController {
     }
     
     private func loadAllTests() {
+        // Clear any existing mock data
+        labTestService.clearAllTestResults()
+        
         let testResults = labTestService.getAllTestResults()
         allTests = testResults.flatMap { result in
             result.tests.map { test in
