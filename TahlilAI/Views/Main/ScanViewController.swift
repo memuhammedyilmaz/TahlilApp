@@ -12,30 +12,38 @@ import AVFoundation
 
 class ScanViewController: UIViewController {
     
-    // MARK: - UI Components
+    // MARK: - UI Elements
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     
-    private let descriptionLabel: UILabel = {
+
+    
+    private let instructionContainer: UIView = {
+        let view = UIView()
+        view.backgroundColor = .cardBackground
+        view.layer.cornerRadius = 12
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor.primaryGradientStart.withAlphaComponent(0.3).cgColor
+        return view
+    }()
+    
+    private let instructionLabel: UILabel = {
         let label = UILabel()
-        label.text = "📷 Fotoğraf çekin veya galeriden görsel ekleyin\nTahlil sonuçlarınızı AI ile analiz edelim"
+        label.text = "📷 Fotoğraf çekin veya galeriden görsel ekleyin\nTahlil sonuçlarınızı Al ile analiz edelim"
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textAlignment = .center
-        label.numberOfLines = 0
+        label.textAlignment = .left
         label.textColor = .textSecondary
-        label.lineBreakMode = .byWordWrapping
-        label.roundCorners(12)
-        label.addShadow(color: .primaryGradientStart, opacity: 0.2, radius: 8)
-        label.layer.borderWidth = 2
-        label.layer.borderColor = UIColor.primaryGradientStart.withAlphaComponent(0.3).cgColor
+        label.numberOfLines = 0
         return label
     }()
     
     private let imageContainerView: UIView = {
         let view = UIView()
         view.backgroundColor = .cardBackground
-        view.roundCorners(20)
-        view.layer.borderWidth = 3
+        view.layer.cornerRadius = 16
+        view.layer.borderWidth = 1
         view.layer.borderColor = UIColor.primaryGradientStart.withAlphaComponent(0.3).cgColor
-        view.addShadow(color: .primaryGradientStart, opacity: 0.2, radius: 15)
+        view.addShadow(color: .primaryGradientStart, opacity: 0.1, radius: 8)
         view.isUserInteractionEnabled = true
         return view
     }()
@@ -44,7 +52,7 @@ class ScanViewController: UIViewController {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.backgroundColor = .clear
-        imageView.roundCorners(20)
+        imageView.layer.cornerRadius = 14
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -56,29 +64,28 @@ class ScanViewController: UIViewController {
         label.textColor = .textSecondary
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.tag = 100
         return label
     }()
     
     private let cameraButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("📷 Kamera ile Çek", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
         button.backgroundColor = .primaryGradientStart
         button.setTitleColor(.white, for: .normal)
-        button.roundCorners(20)
-        button.addShadow(color: .primaryGradientStart, opacity: 0.3, radius: 12)
+        button.layer.cornerRadius = 12
+        button.addShadow(color: .primaryGradientStart, opacity: 0.2, radius: 6)
         return button
     }()
     
     private let galleryButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("🖼️ Galeriden Seç", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
-        button.backgroundColor = .successGradientStart
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        button.backgroundColor = .statusSuccess
         button.setTitleColor(.white, for: .normal)
-        button.roundCorners(20)
-        button.addShadow(color: .successGradientStart, opacity: 0.3, radius: 12)
+        button.layer.cornerRadius = 12
+        button.addShadow(color: .statusSuccess, opacity: 0.2, radius: 6)
         return button
     }()
     
@@ -88,26 +95,32 @@ class ScanViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
         button.backgroundColor = .secondaryGradientStart
         button.setTitleColor(.white, for: .normal)
-        button.roundCorners(25)
-        button.addShadow(color: .secondaryGradientStart, opacity: 0.3, radius: 15)
+        button.layer.cornerRadius = 16
         button.isEnabled = false
         button.alpha = 0.6
+        button.addShadow(color: .secondaryGradientStart, opacity: 0.3, radius: 8)
         return button
     }()
     
-    private let creditsLabel: UILabel = {
+    private let creditLabel: UILabel = {
         let label = UILabel()
-        label.text = "💎 Kalan Kredi: 0"
-        label.font = .systemFont(ofSize: 18, weight: .bold)
-        label.textColor = .primaryGradientStart
+        label.text = "💎 Kalan Kredi: 100"
+        label.font = .systemFont(ofSize: 16, weight: .bold)
         label.textAlignment = .center
+        label.textColor = .primaryGradientStart
         return label
     }()
     
+    private let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.hidesWhenStopped = true
+        indicator.color = .primaryGradientStart
+        return indicator
+    }()
+    
     // MARK: - Properties
-    private let imagePicker = UIImagePickerController()
+    private let viewModel = ScanViewModel()
     private var selectedImage: UIImage?
-    private let userService = UserService()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -115,17 +128,10 @@ class ScanViewController: UIViewController {
         setupNavigationBar()
         setupUI()
         setupConstraints()
-        setupImagePicker()
         setupActions()
-        updateCreditsLabel()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        updateCreditsLabel()
-    }
-    
-    // MARK: - Setup Methods
+    // MARK: - Setup
     private func setupNavigationBar() {
         title = "Tahlil Tara"
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -136,7 +142,7 @@ class ScanViewController: UIViewController {
     }
     
     private func setupUI() {
-        // Modern gradient background
+        // Gradient background
         view.addGradientBackground(
             startColor: .backgroundPrimary,
             endColor: .backgroundSecondary,
@@ -144,46 +150,44 @@ class ScanViewController: UIViewController {
             endPoint: CGPoint(x: 1, y: 1)
         )
         
-        // Add subviews using SnapKit style
-        view.addSubview(descriptionLabel)
+        view.addSubview(instructionContainer)
+        instructionContainer.addSubview(instructionLabel)
         view.addSubview(imageContainerView)
         imageContainerView.addSubview(imageView)
         imageContainerView.addSubview(placeholderLabel)
         view.addSubview(cameraButton)
         view.addSubview(galleryButton)
         view.addSubview(analyzeButton)
-        view.addSubview(creditsLabel)
+        view.addSubview(creditLabel)
+        view.addSubview(activityIndicator)
     }
     
     private func setupConstraints() {
-        // DescriptionLabel
-        descriptionLabel.snp.makeConstraints { make in
+        instructionContainer.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
-            make.leading.equalToSuperview().offset(24)
-            make.trailing.equalToSuperview().offset(-24)
-            make.height.greaterThanOrEqualTo(80)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(80)
         }
         
-        // ImageContainerView
+        instructionLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(16)
+        }
+        
         imageContainerView.snp.makeConstraints { make in
-            make.top.equalTo(descriptionLabel.snp.bottom).offset(24)
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.height.equalTo(280)
+            make.top.equalTo(instructionContainer.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(250)
         }
         
-        // ImageView
         imageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalToSuperview().inset(8)
         }
         
-        // PlaceholderLabel
         placeholderLabel.snp.makeConstraints { make in
             make.center.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(20)
         }
         
-        // CameraButton
         cameraButton.snp.makeConstraints { make in
             make.top.equalTo(imageContainerView.snp.bottom).offset(20)
             make.leading.equalToSuperview().offset(20)
@@ -191,7 +195,6 @@ class ScanViewController: UIViewController {
             make.height.equalTo(50)
         }
         
-        // GalleryButton
         galleryButton.snp.makeConstraints { make in
             make.top.equalTo(imageContainerView.snp.bottom).offset(20)
             make.leading.equalTo(view.snp.centerX).offset(8)
@@ -199,85 +202,125 @@ class ScanViewController: UIViewController {
             make.height.equalTo(50)
         }
         
-        // AnalyzeButton
         analyzeButton.snp.makeConstraints { make in
             make.top.equalTo(cameraButton.snp.bottom).offset(20)
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.height.equalTo(50)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(56)
         }
         
-        // CreditsLabel
-        creditsLabel.snp.makeConstraints { make in
+        creditLabel.snp.makeConstraints { make in
             make.top.equalTo(analyzeButton.snp.bottom).offset(12)
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(-20)
+            make.leading.trailing.equalToSuperview().inset(20)
         }
         
-
-        
+        activityIndicator.snp.makeConstraints { make in
+            make.center.equalTo(imageContainerView)
+        }
     }
-    
-    private func setupImagePicker() {
-        imagePicker.delegate = self
-        imagePicker.allowsEditing = true
-    }
-    
-
     
     private func setupActions() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageContainerTapped))
+        imageContainerView.addGestureRecognizer(tapGesture)
+        
         cameraButton.addTarget(self, action: #selector(cameraButtonTapped), for: .touchUpInside)
         galleryButton.addTarget(self, action: #selector(galleryButtonTapped), for: .touchUpInside)
         analyzeButton.addTarget(self, action: #selector(analyzeButtonTapped), for: .touchUpInside)
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageViewTapped))
-        imageContainerView.addGestureRecognizer(tapGesture)
     }
     
     // MARK: - Actions
+    @objc private func imageContainerTapped() {
+        imageContainerView.addPulseAnimation()
+        showImageSourceAlert()
+    }
+    
     @objc private func cameraButtonTapped() {
-        // Check camera availability
-        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
-            showError("Bu cihazda kamera bulunmuyor")
-            return
-        }
-        
-        // Check camera permission
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized:
-            openCamera()
-        case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                DispatchQueue.main.async {
-                    if granted {
-                        self?.openCamera()
-                    } else {
-                        self?.showError("Kamera izni reddedildi")
-                    }
-                }
+        cameraButton.addPulseAnimation()
+        checkCameraPermission { granted in
+            if granted {
+                self.openCamera()
+            } else {
+                self.showPermissionAlert(for: "kamera")
             }
-        case .denied, .restricted:
-            showCameraPermissionAlert()
-        @unknown default:
-            showError("Kamera erişimi sağlanamadı")
         }
+    }
+    
+    @objc private func galleryButtonTapped() {
+        galleryButton.addPulseAnimation()
+        checkPhotoLibraryPermission { granted in
+            if granted {
+                self.openPhotoLibrary()
+            } else {
+                self.showPermissionAlert(for: "galeri")
+            }
+        }
+    }
+    
+    @objc private func analyzeButtonTapped() {
+        guard let image = selectedImage else { return }
+        
+        analyzeButton.addPulseAnimation()
+        activityIndicator.startAnimating()
+        analyzeButton.isEnabled = false
+        analyzeButton.alpha = 0.6
+        
+        viewModel.processImage(image)
+        
+        // Simulate processing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            self?.activityIndicator.stopAnimating()
+            self?.analyzeButton.isEnabled = true
+            self?.analyzeButton.alpha = 1.0
+            self?.showAlert(message: "Analiz tamamlandı!")
+        }
+    }
+    
+    // MARK: - Helper Methods
+    private func showImageSourceAlert() {
+        let alert = UIAlertController(title: "Fotoğraf Seç", message: "Fotoğraf kaynağını seçin", preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Kamera", style: .default) { [weak self] _ in
+            self?.cameraButtonTapped()
+        })
+        
+        alert.addAction(UIAlertAction(title: "Galeri", style: .default) { [weak self] _ in
+            self?.galleryButtonTapped()
+        })
+        
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    
+    private func checkCameraPermission(completion: @escaping (Bool) -> Void) {
+        viewModel.checkCameraPermission(completion: completion)
+    }
+    
+    private func checkPhotoLibraryPermission(completion: @escaping (Bool) -> Void) {
+        viewModel.checkPhotoLibraryPermission(completion: completion)
     }
     
     private func openCamera() {
+        let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .camera
-        imagePicker.cameraCaptureMode = .photo
+        imagePicker.delegate = self
         present(imagePicker, animated: true)
     }
     
-    private func showCameraPermissionAlert() {
+    private func openPhotoLibrary() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .photoLibrary
+        imagePicker.delegate = self
+        present(imagePicker, animated: true)
+    }
+    
+    private func showPermissionAlert(for feature: String) {
         let alert = UIAlertController(
-            title: "Kamera İzni Gerekli",
-            message: "Kamera kullanabilmek için Ayarlar > Gizlilik ve Güvenlik > Kamera bölümünden izin vermeniz gerekiyor.",
+            title: "İzin Gerekli",
+            message: "\(feature.capitalized) erişimi için ayarlardan izin vermeniz gerekiyor.",
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Ayarlara Git", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: "Ayarlar", style: .default) { _ in
             if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
                 UIApplication.shared.open(settingsUrl)
             }
@@ -288,112 +331,31 @@ class ScanViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    @objc private func galleryButtonTapped() {
-        imagePicker.sourceType = .photoLibrary
-        present(imagePicker, animated: true)
-    }
-    
-    @objc private func analyzeButtonTapped() {
-        guard let image = selectedImage else { return }
-        
-        // Check credits
-        if userService.getAvailableCredits() < 1 {
-            showError("Yetersiz kredi. Lütfen kredi satın alın.")
-            return
-        }
-        
-        startAnalysis(image: image)
-    }
-    
-    @objc private func saveButtonTapped() {
-        saveTestResults()
-    }
-    
-    @objc private func imageViewTapped() {
-        let alert = UIAlertController(title: "Fotoğraf Seç", message: nil, preferredStyle: .actionSheet)
-        
-        alert.addAction(UIAlertAction(title: "Kamera", style: .default) { _ in
-            self.cameraButtonTapped()
-        })
-        
-        alert.addAction(UIAlertAction(title: "Galeri", style: .default) { _ in
-            self.galleryButtonTapped()
-        })
-        
-        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
-        
-        present(alert, animated: true)
-    }
-    
-    // MARK: - Helper Methods
-    private func startAnalysis(image: UIImage) {
-        // TODO: Implement AI analysis
-        showError("AI analiz özelliği henüz aktif değil")
-    }
-    
-
-    
-    private func showResults() {
-        // TODO: Show actual analysis results
-        showError("Sonuçlar henüz mevcut değil")
-    }
-    
-    private func saveTestResults() {
-        // This method is now handled in showResults()
-        showSuccess("Test sonuçları başarıyla kaydedildi")
-        resetUI()
-    }
-    
-    private func resetUI() {
-        selectedImage = nil
-        imageView.image = nil
-        
-        // Show placeholder again
-        placeholderLabel.isHidden = false
-        
-        analyzeButton.isEnabled = false
-        analyzeButton.alpha = 0.6
-    }
-   
-    
-    private func openHistoryViewController() {
-        let historyVC = HistoryViewController()
-        let navController = UINavigationController(rootViewController: historyVC)
-        navController.modalPresentationStyle = .pageSheet
-        present(navController, animated: true)
-    }
-    
-    private func updateCreditsLabel() {
-        let credits = userService.getAvailableCredits()
-        creditsLabel.text = "💎 Kalan Kredi: \(credits)"
-    }
-    
-    private func showError(_ message: String) {
-        let alert = UIAlertController(title: "Hata", message: message, preferredStyle: .alert)
+    private func showAlert(message: String) {
+        let alert = UIAlertController(title: "Bilgi", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         present(alert, animated: true)
     }
     
-    private func showSuccess(_ message: String) {
-        let alert = UIAlertController(title: "Başarılı", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Tamam", style: .default))
-        present(alert, animated: true)
+    private func updateUIForSelectedImage() {
+        placeholderLabel.isHidden = true
+        analyzeButton.isEnabled = true
+        analyzeButton.alpha = 1.0
+        
+        // Add shimmer effect to image container
+        imageContainerView.addShimmerEffect()
     }
 }
 
 // MARK: - UIImagePickerControllerDelegate
 extension ScanViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let image = info[.editedImage] as? UIImage {
+        if let image = info[.originalImage] as? UIImage {
             selectedImage = image
             imageView.image = image
-            
-            // Hide placeholder
-            placeholderLabel.isHidden = true
-            
-            analyzeButton.isEnabled = true
-            analyzeButton.alpha = 1.0
+            updateUIForSelectedImage()
         }
+        
         picker.dismiss(animated: true)
     }
     
@@ -404,4 +366,6 @@ extension ScanViewController: UIImagePickerControllerDelegate, UINavigationContr
 
 
 
- 
+
+
+

@@ -165,7 +165,6 @@ class LoginViewController: UIViewController {
     // MARK: - Properties
     private let userService = UserService()
     private let firebaseAuthService = FirebaseAuthService()
-    private let viewModel = LoginViewModel()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -175,7 +174,6 @@ class LoginViewController: UIViewController {
         setupActions()
         setupGradient()
         setupKeyboardHandling()
-        setupViewModel()
     }
     
     override func viewDidLayoutSubviews() {
@@ -403,38 +401,6 @@ class LoginViewController: UIViewController {
         }
     }
     
-    private func setupViewModel() {
-        viewModel.onLoginSuccess = { [weak self] in
-            DispatchQueue.main.async {
-                // Navigate to main app
-                let mainTabBarController = MainTabBarController()
-                mainTabBarController.modalPresentationStyle = .fullScreen
-                self?.present(mainTabBarController, animated: true)
-            }
-        }
-        
-        viewModel.onLoginFailure = { [weak self] errorMessage in
-            DispatchQueue.main.async {
-                self?.showAlert(message: errorMessage)
-                self?.loginButton.setTitle("Giriş Yap", for: .normal)
-                self?.loginButton.isEnabled = true
-            }
-        }
-        
-        // Observe loading state
-        viewModel.onLoadingChanged = { [weak self] isLoading in
-            DispatchQueue.main.async {
-                if isLoading {
-                    self?.loginButton.setTitle("Giriş yapılıyor...", for: .normal)
-                    self?.loginButton.isEnabled = false
-                } else {
-                    self?.loginButton.setTitle("Giriş Yap", for: .normal)
-                    self?.loginButton.isEnabled = true
-                }
-            }
-        }
-    }
-    
     // MARK: - Actions
     @objc private func loginButtonTapped() {
         guard let email = emailTextField.text, !email.isEmpty,
@@ -443,8 +409,30 @@ class LoginViewController: UIViewController {
             return
         }
         
-        // Use ViewModel for login
-        viewModel.login(email: email, password: password)
+        // Add loading state
+        loginButton.setTitle("Giriş yapılıyor...", for: .normal)
+        loginButton.isEnabled = false
+        
+        // Firebase Authentication
+        firebaseAuthService.signIn(email: email, password: password) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let user):
+                    // Save user to local storage
+                    self?.userService.saveUser(user)
+                    
+                    // Navigate to main app
+                    let mainTabBarController = MainTabBarController()
+                    mainTabBarController.modalPresentationStyle = .fullScreen
+                    self?.present(mainTabBarController, animated: true)
+                    
+                case .failure(let error):
+                    self?.handleAuthError(error)
+                    self?.loginButton.setTitle("Giriş Yap", for: .normal)
+                    self?.loginButton.isEnabled = true
+                }
+            }
+        }
     }
     
     @objc private func registerButtonTapped() {

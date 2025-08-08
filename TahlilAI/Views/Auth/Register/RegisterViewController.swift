@@ -222,7 +222,6 @@ class RegisterViewController: UIViewController {
     // MARK: - Properties
     private let userService = UserService()
     private let firebaseAuthService = FirebaseAuthService()
-    private let viewModel = RegisterViewModel()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -232,7 +231,6 @@ class RegisterViewController: UIViewController {
         setupActions()
         setupGradient()
         setupKeyboardHandling()
-        setupViewModel()
     }
     
     override func viewDidLayoutSubviews() {
@@ -518,38 +516,6 @@ class RegisterViewController: UIViewController {
         }
     }
     
-    private func setupViewModel() {
-        viewModel.onRegisterSuccess = { [weak self] in
-            DispatchQueue.main.async {
-                // Navigate to main app
-                let mainTabBarController = MainTabBarController()
-                mainTabBarController.modalPresentationStyle = .fullScreen
-                self?.present(mainTabBarController, animated: true)
-            }
-        }
-        
-        viewModel.onRegisterFailure = { [weak self] errorMessage in
-            DispatchQueue.main.async {
-                self?.showAlert(message: errorMessage)
-                self?.registerButton.setTitle("Hesap Oluştur", for: .normal)
-                self?.registerButton.isEnabled = true
-            }
-        }
-        
-        // Observe loading state
-        viewModel.onLoadingChanged = { [weak self] isLoading in
-            DispatchQueue.main.async {
-                if isLoading {
-                    self?.registerButton.setTitle("Hesap oluşturuluyor...", for: .normal)
-                    self?.registerButton.isEnabled = false
-                } else {
-                    self?.registerButton.setTitle("Hesap Oluştur", for: .normal)
-                    self?.registerButton.isEnabled = true
-                }
-            }
-        }
-    }
-    
     // MARK: - Actions
     @objc private func registerButtonTapped() {
         guard let name = nameTextField.text, !name.isEmpty,
@@ -560,8 +526,40 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        // Use ViewModel for registration
-        viewModel.register(name: name, email: email, password: password, confirmPassword: confirmPassword)
+        guard password == confirmPassword else {
+            showAlert(message: "Şifreler eşleşmiyor")
+            return
+        }
+        
+        guard password.count >= 6 else {
+            showAlert(message: "Şifre en az 6 karakter olmalıdır")
+            return
+        }
+        
+        // Add loading state
+        registerButton.setTitle("Hesap oluşturuluyor...", for: .normal)
+        registerButton.isEnabled = false
+        
+        // Firebase Authentication
+        firebaseAuthService.signUp(email: email, password: password, name: name) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let user):
+                    // Save user to local storage
+                    self?.userService.saveUser(user)
+                    
+                    // Navigate to main app
+                    let mainTabBarController = MainTabBarController()
+                    mainTabBarController.modalPresentationStyle = .fullScreen
+                    self?.present(mainTabBarController, animated: true)
+                    
+                case .failure(let error):
+                    self?.handleAuthError(error)
+                    self?.registerButton.setTitle("Hesap Oluştur", for: .normal)
+                    self?.registerButton.isEnabled = true
+                }
+            }
+        }
     }
     
     @objc private func loginButtonTapped() {
