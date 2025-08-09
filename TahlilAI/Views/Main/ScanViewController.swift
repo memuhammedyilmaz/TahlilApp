@@ -43,7 +43,6 @@ class ScanViewController: UIViewController {
         view.layer.cornerRadius = 16
         view.layer.borderWidth = 1
         view.layer.borderColor = UIColor.primaryGradientStart.withAlphaComponent(0.3).cgColor
-        view.addShadow(color: .primaryGradientStart, opacity: 0.1, radius: 8)
         view.isUserInteractionEnabled = true
         return view
     }()
@@ -111,12 +110,7 @@ class ScanViewController: UIViewController {
         return label
     }()
     
-    private let activityIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(style: .large)
-        indicator.hidesWhenStopped = true
-        indicator.color = .primaryGradientStart
-        return indicator
-    }()
+
     
     // MARK: - Properties
     private let viewModel = ScanViewModel()
@@ -159,7 +153,6 @@ class ScanViewController: UIViewController {
         view.addSubview(galleryButton)
         view.addSubview(analyzeButton)
         view.addSubview(creditLabel)
-        view.addSubview(activityIndicator)
     }
     
     private func setupConstraints() {
@@ -213,9 +206,7 @@ class ScanViewController: UIViewController {
             make.leading.trailing.equalToSuperview().inset(20)
         }
         
-        activityIndicator.snp.makeConstraints { make in
-            make.center.equalTo(imageContainerView)
-        }
+
     }
     
     private func setupActions() {
@@ -229,12 +220,10 @@ class ScanViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func imageContainerTapped() {
-        imageContainerView.addPulseAnimation()
         showImageSourceAlert()
     }
     
     @objc private func cameraButtonTapped() {
-        cameraButton.addPulseAnimation()
         checkCameraPermission { granted in
             if granted {
                 self.openCamera()
@@ -245,7 +234,6 @@ class ScanViewController: UIViewController {
     }
     
     @objc private func galleryButtonTapped() {
-        galleryButton.addPulseAnimation()
         checkPhotoLibraryPermission { granted in
             if granted {
                 self.openPhotoLibrary()
@@ -258,20 +246,15 @@ class ScanViewController: UIViewController {
     @objc private func analyzeButtonTapped() {
         guard let image = selectedImage else { return }
         
-        analyzeButton.addPulseAnimation()
-        activityIndicator.startAnimating()
-        analyzeButton.isEnabled = false
-        analyzeButton.alpha = 0.6
+        viewModel.onAnalysisComplete = { [weak self] extractedText in
+            self?.showAnalysisResult(extractedText)
+        }
+        
+        viewModel.onAnalysisError = { [weak self] errorMessage in
+            self?.showAlert(message: "Analiz hatası: \(errorMessage)")
+        }
         
         viewModel.processImage(image)
-        
-        // Simulate processing
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
-            self?.activityIndicator.stopAnimating()
-            self?.analyzeButton.isEnabled = true
-            self?.analyzeButton.alpha = 1.0
-            self?.showAlert(message: "Analiz tamamlandı!")
-        }
     }
     
     // MARK: - Helper Methods
@@ -334,6 +317,23 @@ class ScanViewController: UIViewController {
     private func showAlert(message: String) {
         let alert = UIAlertController(title: "Bilgi", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Tamam", style: .default))
+        present(alert, animated: true)
+    }
+    
+    private func showAnalysisResult(_ extractedText: String) {
+        let alert = UIAlertController(
+            title: "🔍 Analiz Sonucu",
+            message: "Tesseract OCR'dan çıkarılan metin:\n\n\(extractedText)",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Kopyala", style: .default) { _ in
+            UIPasteboard.general.string = extractedText
+            self.showAlert(message: "Metin panoya kopyalandı!")
+        })
+        
+        alert.addAction(UIAlertAction(title: "Tamam", style: .cancel))
+        
         present(alert, animated: true)
     }
     
