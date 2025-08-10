@@ -15,8 +15,6 @@ class TesseractOCRService {
     private init() {}
     
     func extractText(from image: UIImage, completion: @escaping (Result<String, Error>) -> Void) {
-        print("🔍 Tesseract OCR Analizi Başlatılıyor...")
-        
         guard let cgImage = image.cgImage else {
             completion(.failure(OCRError.imageConversionFailed))
             return
@@ -25,13 +23,11 @@ class TesseractOCRService {
         // Vision framework kullanarak OCR
         let request = VNRecognizeTextRequest { request, error in
             if let error = error {
-                print("❌ OCR Hatası: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
             
             guard let observations = request.results as? [VNRecognizedTextObservation] else {
-                print("❌ OCR sonuçları alınamadı")
                 completion(.failure(OCRError.noResults))
                 return
             }
@@ -42,11 +38,6 @@ class TesseractOCRService {
                 guard let topCandidate = observation.topCandidates(1).first else { continue }
                 extractedText += topCandidate.string + "\n"
             }
-            
-            print("✅ OCR Analiz Tamamlandı:")
-            print("📄 Çıkarılan Metin:")
-            print(extractedText)
-            print(String(repeating: "=", count: 50))
             
             if extractedText.isEmpty {
                 completion(.failure(OCRError.noTextFound))
@@ -66,7 +57,6 @@ class TesseractOCRService {
             do {
                 try handler.perform([request])
             } catch {
-                print("❌ OCR İşlemi Hatası: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
@@ -91,3 +81,4 @@ enum OCRError: Error, LocalizedError {
         }
     }
 }
+

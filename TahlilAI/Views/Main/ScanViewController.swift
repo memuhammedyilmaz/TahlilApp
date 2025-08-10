@@ -321,29 +321,71 @@ class ScanViewController: UIViewController {
     }
     
     private func showAnalysisResult(_ extractedText: String) {
-        let alert = UIAlertController(
-            title: "🔍 Analiz Sonucu",
-            message: "Tesseract OCR'dan çıkarılan metin:\n\n\(extractedText)",
-            preferredStyle: .alert
-        )
+        // Parse OCR text and save to history
+        let labTestService = LabTestService()
+        let parsedTests = labTestService.parseOCRText(extractedText)
         
-        alert.addAction(UIAlertAction(title: "Kopyala", style: .default) { _ in
-            UIPasteboard.general.string = extractedText
-            self.showAlert(message: "Metin panoya kopyalandı!")
-        })
+
         
-        alert.addAction(UIAlertAction(title: "Tamam", style: .cancel))
-        
-        present(alert, animated: true)
+        if !parsedTests.isEmpty {
+            // Create tests with current date
+            let testsWithDate = parsedTests.map { test in
+                LabTest(
+                    id: test.id,
+                    name: test.name,
+                    value: test.value,
+                    unit: test.unit,
+                    normalRange: test.normalRange,
+                    date: Date(), // Set current date
+                    category: test.category,
+                    testStatus: test.testStatus
+                )
+            }
+            
+            // Save to history
+            let testResult = LabTestResult(tests: testsWithDate, notes: "OCR ile taranan tahlil sonuçları")
+            labTestService.saveTestResult(testResult)
+            
+            print("💾 Saved \(testsWithDate.count) tests to history")
+            print("📅 Test result date: \(testResult.date)")
+            
+            let alert = UIAlertController(
+                title: "✅ Tahlil Sonuçları Kaydedildi",
+                message: "\(parsedTests.count) adet test sonucu başarıyla analiz edildi ve geçmişe kaydedildi.\n\nGeçmiş sayfasından detayları görüntüleyebilirsiniz.",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Geçmişi Görüntüle", style: .default) { _ in
+                self.navigateToHistory()
+            })
+            
+            alert.addAction(UIAlertAction(title: "Tamam", style: .cancel))
+            
+            present(alert, animated: true)
+        } else {
+            // No tests could be parsed
+            let alert = UIAlertController(
+                title: "⚠️ Analiz Sonucu",
+                message: "OCR metni tahlil verilerine dönüştürülemedi.",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Tamam", style: .cancel))
+            
+            present(alert, animated: true)
+        }
+    }
+    
+    private func navigateToHistory() {
+        let historyVC = HistoryViewController()
+        let navController = UINavigationController(rootViewController: historyVC)
+        present(navController, animated: true)
     }
     
     private func updateUIForSelectedImage() {
         placeholderLabel.isHidden = true
         analyzeButton.isEnabled = true
         analyzeButton.alpha = 1.0
-        
-        // Add shimmer effect to image container
-        imageContainerView.addShimmerEffect()
     }
 }
 

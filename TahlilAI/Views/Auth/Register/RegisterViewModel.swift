@@ -101,8 +101,7 @@ class RegisterViewModel: BaseViewModel, RegisterViewModelProtocol {
         case 17006: // Operation not allowed
             errorMessage = "E-posta/şifre ile kayıt etkin değil"
         default:
-            // Debug: Print the actual error for troubleshooting
-            print("Firebase Auth Error - Code: \(nsError.code), Description: \(error.localizedDescription)")
+           
             
             // Try to match based on error description as fallback
             let errorDescription = error.localizedDescription.lowercased()

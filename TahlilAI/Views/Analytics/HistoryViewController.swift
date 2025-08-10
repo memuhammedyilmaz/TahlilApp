@@ -175,12 +175,12 @@ class HistoryViewController: UIViewController {
     }
     
     private func loadAllTests() {
-        // Clear any existing mock data
-        labTestService.clearAllTestResults()
-        
         let testResults = labTestService.getAllTestResults()
+        print("📊 History VC: Found \(testResults.count) test results")
+        
         allTests = testResults.flatMap { result in
-            result.tests.map { test in
+            print("📋 Processing result from \(result.date) with \(result.tests.count) tests")
+            return result.tests.map { test in
                 // Create a new test with the result's date
                 return LabTest(
                     id: test.id,
@@ -189,10 +189,13 @@ class HistoryViewController: UIViewController {
                     unit: test.unit,
                     normalRange: test.normalRange,
                     date: result.date, // Use the result's date
-                    category: test.category
+                    category: test.category,
+                    testStatus: test.testStatus
                 )
             }
         }
+        
+        print("🎯 History VC: Total tests loaded: \(allTests.count)")
         
         // Sort by date (newest first)
         allTests.sort { $0.date > $1.date }
@@ -312,6 +315,11 @@ class HistoryTestResultCell: UITableViewCell {
         testNameLabel.text = test.name
         testValueLabel.text = "\(test.value) \(test.unit)"
         
+        // Show normal range if available
+        if !test.normalRange.isEmpty && test.normalRange != "0-100" {
+            testValueLabel.text = "\(test.value) \(test.unit) (Normal: \(test.normalRange))"
+        }
+        
         if test.isAbnormal {
             testNameLabel.textColor = .systemRed
             testStatusLabel.text = "Anormal"
@@ -320,6 +328,11 @@ class HistoryTestResultCell: UITableViewCell {
             testNameLabel.textColor = .label
             testStatusLabel.text = "Normal"
             testStatusLabel.textColor = .label
+        }
+        
+        // Show category for OCR tests
+        if test.category == "OCR" {
+            testStatusLabel.text = "\(testStatusLabel.text ?? "") • OCR"
         }
         
         let dateFormatter = DateFormatter()

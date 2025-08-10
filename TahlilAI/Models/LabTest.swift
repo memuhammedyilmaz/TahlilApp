@@ -7,35 +7,59 @@
 
 import Foundation
 
+// MARK: - Test Status Enum
+enum TestStatus: String, Codable, CaseIterable {
+    case normal = "Normal"
+    case high = "Yüksek"
+    case low = "Düşük"
+    case abnormal = "Anormal"
+    
+    var displayText: String {
+        switch self {
+        case .normal:
+            return "Normal"
+        case .high:
+            return "Yüksek"
+        case .low:
+            return "Düşük"
+        case .abnormal:
+            return "Anormal"
+        }
+    }
+    
+    var color: String {
+        switch self {
+        case .normal:
+            return "systemGreen"
+        case .high, .low, .abnormal:
+            return "systemRed"
+        }
+    }
+}
+
 // MARK: - Lab Test Model
 struct LabTest: Codable {
     let id: String
     let name: String
-    let value: Double
+    let value: String
     let unit: String
     let normalRange: String
     let date: Date
     let category: String
+    let testStatus: TestStatus
     
     var isAbnormal: Bool {
-        // Simple logic to determine if test is abnormal
-        // In a real app, you'd parse the normalRange string and compare
-        let rangeComponents = normalRange.components(separatedBy: "-")
-        if rangeComponents.count == 2,
-           let minValue = Double(rangeComponents[0].trimmingCharacters(in: .whitespaces)),
-           let maxValue = Double(rangeComponents[1].trimmingCharacters(in: .whitespaces)) {
-            return value < minValue || value > maxValue
-        }
-        return false
+        return testStatus != .normal
     }
     
     init(id: String = UUID().uuidString,
          name: String,
-         value: Double,
+         value: String,
          unit: String,
          normalRange: String,
          date: Date = Date(),
-         category: String) {
+         category: String = "Lab Test",
+         testStatus: TestStatus = .normal) {
         self.id = id
         self.name = name
         self.value = value
@@ -43,6 +67,7 @@ struct LabTest: Codable {
         self.normalRange = normalRange
         self.date = date
         self.category = category
+        self.testStatus = testStatus
     }
 }
 

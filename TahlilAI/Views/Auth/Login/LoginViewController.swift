@@ -489,9 +489,7 @@ class LoginViewController: UIViewController {
         case 17006, 17993: // Operation not allowed
             errorMessage = "E-posta/şifre ile giriş etkin değil"
         default:
-            // Debug: Print the actual error for troubleshooting
-            print("Firebase Auth Error - Code: \(nsError.code), Description: \(error.localizedDescription)")
-            
+        
             // Try to match based on error description as fallback
             let errorDescription = error.localizedDescription.lowercased()
             if errorDescription.contains("password") || errorDescription.contains("şifre") || errorDescription.contains("wrong") {

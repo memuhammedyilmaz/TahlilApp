@@ -83,7 +83,6 @@ class FirebaseAuthService: FirebaseAuthServiceProtocol {
             try auth.signOut()
             return true
         } catch {
-            print("Sign out error: \(error)")
             return false
         }
     }
