@@ -55,7 +55,7 @@ class HistoryViewController: UIViewController {
     // MARK: - Properties
     private var allTests: [LabTest] = []
     private var filteredTests: [LabTest] = []
-    private let labTestService = LabTestService()
+    private let labTestService = LabTestService.shared
     private var selectedFilter: TestFilter = .all
     
     // MARK: - Lifecycle
@@ -330,10 +330,7 @@ class HistoryTestResultCell: UITableViewCell {
             testStatusLabel.textColor = .label
         }
         
-        // Show category for OCR tests
-        if test.category == "OCR" {
-            testStatusLabel.text = "\(testStatusLabel.text ?? "") • OCR"
-        }
+
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .short

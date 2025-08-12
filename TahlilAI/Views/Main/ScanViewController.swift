@@ -246,8 +246,8 @@ class ScanViewController: UIViewController {
     @objc private func analyzeButtonTapped() {
         guard let image = selectedImage else { return }
         
-        viewModel.onAnalysisComplete = { [weak self] extractedText in
-            self?.showAnalysisResult(extractedText)
+        viewModel.onAnalysisComplete = { [weak self] _ in
+            self?.showAnalysisResult()
         }
         
         viewModel.onAnalysisError = { [weak self] errorMessage in
@@ -320,60 +320,16 @@ class ScanViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    private func showAnalysisResult(_ extractedText: String) {
-        // Parse OCR text and save to history
-        let labTestService = LabTestService()
-        let parsedTests = labTestService.parseOCRText(extractedText)
+    private func showAnalysisResult() {
+        // TODO: Implement AI analysis result handling
+        let alert = UIAlertController(
+            title: "⚠️ Analiz Sonucu",
+            message: "AI analiz özelliği henüz geliştirilmedi.",
+            preferredStyle: .alert
+        )
         
-
-        
-        if !parsedTests.isEmpty {
-            // Create tests with current date
-            let testsWithDate = parsedTests.map { test in
-                LabTest(
-                    id: test.id,
-                    name: test.name,
-                    value: test.value,
-                    unit: test.unit,
-                    normalRange: test.normalRange,
-                    date: Date(), // Set current date
-                    category: test.category,
-                    testStatus: test.testStatus
-                )
-            }
-            
-            // Save to history
-            let testResult = LabTestResult(tests: testsWithDate, notes: "OCR ile taranan tahlil sonuçları")
-            labTestService.saveTestResult(testResult)
-            
-            print("💾 Saved \(testsWithDate.count) tests to history")
-            print("📅 Test result date: \(testResult.date)")
-            
-            let alert = UIAlertController(
-                title: "✅ Tahlil Sonuçları Kaydedildi",
-                message: "\(parsedTests.count) adet test sonucu başarıyla analiz edildi ve geçmişe kaydedildi.\n\nGeçmiş sayfasından detayları görüntüleyebilirsiniz.",
-                preferredStyle: .alert
-            )
-            
-            alert.addAction(UIAlertAction(title: "Geçmişi Görüntüle", style: .default) { _ in
-                self.navigateToHistory()
-            })
-            
-            alert.addAction(UIAlertAction(title: "Tamam", style: .cancel))
-            
-            present(alert, animated: true)
-        } else {
-            // No tests could be parsed
-            let alert = UIAlertController(
-                title: "⚠️ Analiz Sonucu",
-                message: "OCR metni tahlil verilerine dönüştürülemedi.",
-                preferredStyle: .alert
-            )
-            
-            alert.addAction(UIAlertAction(title: "Tamam", style: .cancel))
-            
-            present(alert, animated: true)
-        }
+        alert.addAction(UIAlertAction(title: "Tamam", style: .cancel))
+        present(alert, animated: true)
     }
     
     private func navigateToHistory() {

@@ -68,8 +68,8 @@ class KVKKManager {
         UserDefaults.standard.removeObject(forKey: "userPreferences")
         
         // Clear lab test results
-        let labTestService = LabTestService()
-        labTestService.clearAllTestResults()
+        let labTestService = LabTestService.shared
+        // TODO: Implement clearAllTestResults method
         
         // Clear Firebase user data (if needed)
         // This should be handled in your Firebase service

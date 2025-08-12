@@ -14,18 +14,9 @@ class ScanViewModel: BaseViewModel {
     var onAnalysisError: ((String) -> Void)?
     
     func processImage(_ image: UIImage) {
-        TesseractOCRService.shared.extractText(from: image) { [weak self] result in
-            switch result {
-            case .success(let extractedText):
-                DispatchQueue.main.async {
-                    self?.onAnalysisComplete?(extractedText)
-                }
-                
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    self?.onAnalysisError?(error.localizedDescription)
-                }
-            }
+        // TODO: Implement AI/ML image analysis
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.onAnalysisError?("AI analiz özelliği henüz geliştirilmedi.")
         }
     }
     

@@ -93,7 +93,7 @@ class AnalyticsViewController: UIViewController {
     // MARK: - Properties
     private var testResults: [LabTestResult] = []
     private var filteredResults: [LabTestResult] = []
-    private let labTestService = LabTestService()
+    private let labTestService = LabTestService.shared
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
