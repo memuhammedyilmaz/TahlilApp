@@ -14,8 +14,6 @@ import Vision
 class ScanViewController: UIViewController {
     
     // MARK: - UI Elements
-    private let scrollView = UIScrollView()
-    private let contentView = UIView()
     
 
     
@@ -120,101 +118,6 @@ class ScanViewController: UIViewController {
         label.isHidden = true
         return label
     }()
-    
-    private let resultsContainer: UIView = {
-        let view = UIView()
-        view.backgroundColor = .cardBackground
-        view.layer.cornerRadius = 16
-        view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.primaryGradientStart.withAlphaComponent(0.3).cgColor
-        view.isHidden = true
-        return view
-    }()
-    
-    private let resultsTitleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "📊 OCR Sonuçları"
-        label.font = .systemFont(ofSize: 18, weight: .bold)
-        label.textAlignment = .center
-        label.textColor = .textPrimary
-        return label
-    }()
-    
-    private let resultsSummaryLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textAlignment = .center
-        label.textColor = .textSecondary
-        label.numberOfLines = 0
-        return label
-    }()
-    
-    private let resultsTableView: UITableView = {
-        let tableView = UITableView()
-        tableView.backgroundColor = .clear
-        tableView.separatorStyle = .none
-        tableView.showsVerticalScrollIndicator = false
-        tableView.isScrollEnabled = true
-        tableView.register(OCRResultCell.self, forCellReuseIdentifier: "OCRResultCell")
-        return tableView
-    }()
-    
-    private let actionButtonsStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.distribution = .fillEqually
-        stackView.spacing = 12
-        stackView.isHidden = true
-        return stackView
-    }()
-    
-    private let copyAllButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("📋 Tümünü Kopyala", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.backgroundColor = .systemBlue
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 8
-        return button
-    }()
-    
-    private let exportButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("📤 Dışa Aktar", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.backgroundColor = .systemGreen
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 8
-        return button
-    }()
-    
-    private let confidenceFilterContainer: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemBackground
-        view.layer.cornerRadius = 8
-        view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.systemGray5.cgColor
-        view.isHidden = true
-        return view
-    }()
-    
-    private let confidenceFilterLabel: UILabel = {
-        let label = UILabel()
-        label.text = "🎯 Güven Filtresi: %80"
-        label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textColor = .label
-        return label
-    }()
-    
-    private let confidenceSlider: UISlider = {
-        let slider = UISlider()
-        slider.minimumValue = 0.0
-        slider.maximumValue = 1.0
-        slider.value = 0.8
-        slider.minimumTrackTintColor = .systemBlue
-        slider.maximumTrackTintColor = .systemGray4
-        return slider
-    }()
 
     
     // MARK: - Properties
@@ -230,6 +133,10 @@ class ScanViewController: UIViewController {
         setupConstraints()
         setupActions()
     }
+    
+
+    
+
     
     // MARK: - Setup
     private func setupNavigationBar() {
@@ -251,31 +158,16 @@ class ScanViewController: UIViewController {
         )
         
         view.addSubview(instructionContainer)
-        instructionContainer.addSubview(instructionLabel)
         view.addSubview(imageContainerView)
-        imageContainerView.addSubview(imageView)
-        imageContainerView.addSubview(placeholderLabel)
         view.addSubview(cameraButton)
         view.addSubview(galleryButton)
         view.addSubview(analyzeButton)
         view.addSubview(creditLabel)
         view.addSubview(progressLabel)
-        view.addSubview(resultsContainer)
         
-        resultsContainer.addSubview(resultsTitleLabel)
-        resultsContainer.addSubview(resultsSummaryLabel)
-        resultsContainer.addSubview(resultsTableView)
-        resultsContainer.addSubview(confidenceFilterContainer)
-        resultsContainer.addSubview(actionButtonsStackView)
-        
-        confidenceFilterContainer.addSubview(confidenceFilterLabel)
-        confidenceFilterContainer.addSubview(confidenceSlider)
-        
-        actionButtonsStackView.addArrangedSubview(copyAllButton)
-        actionButtonsStackView.addArrangedSubview(exportButton)
-        
-        resultsTableView.delegate = self
-        resultsTableView.dataSource = self
+        instructionContainer.addSubview(instructionLabel)
+        imageContainerView.addSubview(imageView)
+        imageContainerView.addSubview(placeholderLabel)
     }
     
     private func setupConstraints() {
@@ -334,49 +226,39 @@ class ScanViewController: UIViewController {
             make.leading.trailing.equalToSuperview().inset(20)
         }
         
-        resultsContainer.snp.makeConstraints { make in
-            make.top.equalTo(progressLabel.snp.bottom).offset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
-        }
+        // Özet label için padding ekle
+        // resultsSummaryLabel.snp.makeConstraints { make in
+        //     make.leading.equalToSuperview().offset(28)
+        //     make.trailing.equalToSuperview().offset(-28)
+        // }
         
-        resultsTitleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
-            make.leading.trailing.equalToSuperview().inset(16)
-        }
+        // resultsTableView.snp.makeConstraints { make in
+        //     make.top.equalTo(resultsSummaryLabel.snp.bottom).offset(20)
+        //     make.leading.trailing.equalToSuperview().inset(16)
+        //     make.bottom.equalTo(confidenceFilterContainer.snp.top).offset(-20)
+        // }
         
-        resultsSummaryLabel.snp.makeConstraints { make in
-            make.top.equalTo(resultsTitleLabel.snp.bottom).offset(8)
-            make.leading.trailing.equalToSuperview().inset(16)
-        }
+        // confidenceFilterContainer.snp.makeConstraints { make in
+        //     make.leading.trailing.equalToSuperview().inset(16)
+        //     make.bottom.equalTo(actionButtonsStackView.snp.top).offset(-16)
+        //     make.height.equalTo(50)
+        // }
         
-        resultsTableView.snp.makeConstraints { make in
-            make.top.equalTo(resultsSummaryLabel.snp.bottom).offset(16)
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(confidenceFilterContainer.snp.top).offset(-16)
-        }
+        // confidenceFilterLabel.snp.makeConstraints { make in
+        //     make.leading.equalToSuperview().offset(12)
+        //     make.centerY.equalToSuperview()
+        // }
         
-        confidenceFilterContainer.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(actionButtonsStackView.snp.top).offset(-16)
-            make.height.equalTo(50)
-        }
+        // confidenceSlider.snp.makeConstraints { make in
+        //     make.leading.equalTo(confidenceFilterLabel.snp.trailing).offset(12)
+        //     make.trailing.equalToSuperview().offset(-12)
+        //     make.centerY.equalToSuperview()
+        // }
         
-        confidenceFilterLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(12)
-            make.centerY.equalToSuperview()
-        }
-        
-        confidenceSlider.snp.makeConstraints { make in
-            make.leading.equalTo(confidenceFilterLabel.snp.trailing).offset(12)
-            make.trailing.equalToSuperview().offset(-12)
-            make.centerY.equalToSuperview()
-        }
-        
-        actionButtonsStackView.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalToSuperview().inset(16)
-            make.height.equalTo(40)
-        }
+        // actionButtonsStackView.snp.makeConstraints { make in
+        //     make.leading.trailing.bottom.equalToSuperview().inset(16)
+        //     make.height.equalTo(40)
+        // }
 
 
     }
@@ -388,14 +270,16 @@ class ScanViewController: UIViewController {
         cameraButton.addTarget(self, action: #selector(cameraButtonTapped), for: .touchUpInside)
         galleryButton.addTarget(self, action: #selector(galleryButtonTapped), for: .touchUpInside)
         analyzeButton.addTarget(self, action: #selector(analyzeButtonTapped), for: .touchUpInside)
-        copyAllButton.addTarget(self, action: #selector(copyAllButtonTapped), for: .touchUpInside)
-        exportButton.addTarget(self, action: #selector(exportButtonTapped), for: .touchUpInside)
-        confidenceSlider.addTarget(self, action: #selector(confidenceSliderChanged), for: .valueChanged)
+        // copyAllButton.addTarget(self, action: #selector(copyAllButtonTapped), for: .touchUpInside)
+        // exportButton.addTarget(self, action: #selector(exportButtonTapped), for: .touchUpInside)
+        // confidenceSlider.addTarget(self, action: #selector(confidenceSliderChanged), for: .valueChanged)
         
-
-        
-
+        // Table view delegate ve data source'u set et
+        // resultsTableView.delegate = self
+        // resultsTableView.dataSource = self
     }
+    
+
     
     // MARK: - Actions
     @objc private func imageContainerTapped() {
@@ -533,27 +417,49 @@ class ScanViewController: UIViewController {
         analyzeButton.isEnabled = true
         analyzeButton.alpha = 1.0
         
-        // Console'a sonuçları yazdır
-        print("🔍 OCR Analiz Sonucu:")
-        print("📝 Toplam Satır: \(ocrResult.totalLines)")
-        print("🎯 Ortalama Güven: %\(ocrResult.averageConfidencePercentage)")
-        print("✅ Yüksek Güvenli: \(ocrResult.highConfidenceLines.count)")
-        print("⚠️ Düşük Güvenli: \(ocrResult.lowConfidenceLines.count)")
-        print("\n📋 Satır Detayları:")
-        
-        for (index, line) in ocrResult.lines.enumerated() {
-            let confidenceIcon = line.isHighConfidence ? "✅" : "⚠️"
-            print("\(index + 1). \(confidenceIcon) %\(line.confidencePercentage) - \(line.text)")
-        }
-        
-        // UI'ı gizle - sadece konsola yazdır
-        resultsContainer.isHidden = true
-        confidenceFilterContainer.isHidden = true
-        actionButtonsStackView.isHidden = true
+        // OCR sonuçlarını dizi formatında print et
+        printOCRResultsAsArray(ocrResult)
         
         // Kullanıcıya bilgi ver
         showAlert(message: "OCR analizi tamamlandı! Sonuçlar konsola yazdırıldı.")
     }
+    
+    /// OCR sonuçlarını tablo formatında print eder
+    private func printOCRResultsAsArray(_ ocrResult: OCRResult) {
+        print("🔍 OCR Analiz Sonucu - Tablo Formatında:")
+        print(String(repeating: "=", count: 100))
+        
+        // Tablo başlığı
+        print("📋 LABORATUVAR TEST SONUÇLARI")
+        print(String(repeating: "-", count: 100))
+        
+        // Tablo sütun başlıkları
+        print("No  Test Adı                    Sonuç          Birim         Referans Değeri")
+        print(String(repeating: "-", count: 100))
+        
+        // Her satır için tablo formatında
+        for (index, line) in ocrResult.lines.enumerated() {
+            let lineNumber = String(format: "%-4d", index + 1)
+            let testName = String(line.text.prefix(25)).padding(toLength: 25, withPad: " ", startingAt: 0)
+            let result = String(line.text.prefix(15)).padding(toLength: 15, withPad: " ", startingAt: 0)
+            let unit = String(line.text.prefix(12)).padding(toLength: 12, withPad: " ", startingAt: 0)
+            let reference = String(line.text.prefix(40)).padding(toLength: 40, withPad: " ", startingAt: 0)
+            
+            print("\(lineNumber) \(testName) \(result) \(unit) \(reference)")
+        }
+        
+        print(String(repeating: "-", count: 100))
+        
+        // Özet bilgileri
+        print("📊 TABLO ÖZETİ:")
+        print("📝 Toplam Test: \(ocrResult.totalLines)")
+        print("🎯 Ortalama Güven: %\(ocrResult.averageConfidencePercentage)")
+        print("✅ Yüksek Güvenli: \(ocrResult.highConfidenceLines.count)")
+        print("⚠️ Düşük Güvenli: \(ocrResult.lowConfidenceLines.count)")
+        print(String(repeating: "=", count: 100))
+    }
+    
+
     
     private func handleAnalysisError(_ errorMessage: String) {
         progressLabel.isHidden = true
@@ -564,17 +470,10 @@ class ScanViewController: UIViewController {
     }
     
     private func scrollToResults() {
-        let resultsFrame = resultsContainer.frame
-        let scrollPoint = CGPoint(x: 0, y: resultsFrame.origin.y - 100)
+        // let resultsFrame = resultsContainer.frame
+        // let scrollPoint = CGPoint(x: 0, y: resultsFrame.origin.y - 100)
         
-        // Use scroll view if available, otherwise animate the view
-        if let scrollView = view.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView {
-            scrollView.setContentOffset(scrollPoint, animated: true)
-        } else {
-            UIView.animate(withDuration: 0.5) {
-                self.view.frame.origin.y = -scrollPoint.y
-            }
-        }
+        // scrollView.setContentOffset(scrollPoint, animated: true)
     }
     
     @objc private func copyAllButtonTapped() {
@@ -615,8 +514,8 @@ class ScanViewController: UIViewController {
             
             // For iPad
             if let popover = activityVC.popoverPresentationController {
-                popover.sourceView = exportButton
-                popover.sourceRect = exportButton.bounds
+                // popover.sourceView = exportButton
+                // popover.sourceRect = exportButton.bounds
             }
             
             present(activityVC, animated: true)
@@ -627,31 +526,31 @@ class ScanViewController: UIViewController {
     }
     
     @objc private func confidenceSliderChanged() {
-        let confidence = Int(confidenceSlider.value * 100)
-        confidenceFilterLabel.text = "🎯 Güven Filtresi: %\(confidence)"
+        // let confidence = Int(confidenceSlider.value * 100)
+        // confidenceFilterLabel.text = "🎯 Güven Filtresi: %\(confidence)"
         
-        // Re-filter results if available
-        if let ocrResults = ocrResults {
-            let filteredLines = ocrResults.lines.filter { $0.confidence >= confidenceSlider.value }
-            let filteredResult = OCRResult(
-                lines: filteredLines,
-                fullText: filteredLines.map { $0.text }.joined(separator: "\n"),
-                totalLines: filteredLines.count,
-                averageConfidence: Double(filteredLines.map { $0.confidence }.reduce(0, +)) / Double(max(filteredLines.count, 1))
-            )
+        // // Re-filter results if available
+        // if let ocrResults = ocrResults {
+        //     let filteredLines = ocrResults.lines.filter { $0.confidence >= confidenceSlider.value }
+        //     let filteredResult = OCRResult(
+        //         lines: filteredLines,
+        //         fullText: filteredLines.map { $0.text }.joined(separator: "\n"),
+        //         totalLines: filteredLines.count,
+        //         averageConfidence: Double(filteredLines.map { $0.confidence }.reduce(0, +)) / Double(max(filteredLines.count, 1))
+        //     )
             
-            // Update summary
-            let summaryText = """
-            📝 Toplam Satır: \(filteredResult.totalLines)
-            🎯 Ortalama Güven: %\(filteredResult.averageConfidencePercentage)
-            ✅ Yüksek Güvenli: \(filteredResult.highConfidenceLines.count)
-            ⚠️ Düşük Güvenli: \(filteredResult.lowConfidenceLines.count)
-            """
-            resultsSummaryLabel.text = summaryText
+        //     // Update summary
+        //     let summaryText = """
+        //     📝 Toplam Satır: \(filteredResult.totalLines)
+        //     🎯 Ortalama Güven: %\(filteredResult.averageConfidencePercentage)
+        //     ✅ Yüksek Güvenli: \(filteredResult.highConfidenceLines.count)
+        //     ⚠️ Düşük Güvenli: \(filteredResult.lowConfidenceLines.count)
+        //     """
+        //     resultsSummaryLabel.text = summaryText
             
-            // Reload table view
-            resultsTableView.reloadData()
-        }
+        //     // Reload table view
+        //     resultsTableView.reloadData()
+        // }
     }
 
     
@@ -667,9 +566,9 @@ class ScanViewController: UIViewController {
         analyzeButton.alpha = 1.0
         
         // Reset previous results
-        resultsContainer.isHidden = true
-        confidenceFilterContainer.isHidden = true
-        actionButtonsStackView.isHidden = true
+        // resultsContainer.isHidden = true
+        // confidenceFilterContainer.isHidden = true
+        // actionButtonsStackView.isHidden = true
         ocrResults = nil
     }
 }
@@ -697,151 +596,9 @@ extension ScanViewController: UIImagePickerControllerDelegate, UINavigationContr
     }
 }
 
-// MARK: - UITableViewDelegate, UITableViewDataSource
-extension ScanViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return ocrResults?.lines.count ?? 0
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "OCRResultCell", for: indexPath) as! OCRResultCell
-        if let line = ocrResults?.lines[indexPath.row] {
-            cell.configure(with: line)
-        }
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 60 // Adjust as needed
-    }
-}
 
-// MARK: - OCRResultCell
-class OCRResultCell: UITableViewCell {
-    
-    private let containerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemBackground
-        view.layer.cornerRadius = 8
-        view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.systemGray5.cgColor
-        return view
-    }()
-    
-    private let lineNumberLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .systemGray
-        label.textAlignment = .center
-        label.backgroundColor = .systemGray6
-        label.layer.cornerRadius = 10
-        label.clipsToBounds = true
-        return label
-    }()
-    
-    private let contentTextLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textColor = .label
-        label.numberOfLines = 2
-        label.lineBreakMode = .byTruncatingTail
-        return label
-    }()
-    
-    private let confidenceLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .semibold)
-        label.textAlignment = .center
-        label.layer.cornerRadius = 8
-        label.clipsToBounds = true
-        return label
-    }()
-    
-    private let confidenceIconLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 16)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupUI()
-        setupConstraints()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setupUI() {
-        backgroundColor = .clear
-        selectionStyle = .none
-        
-        contentView.addSubview(containerView)
-        containerView.addSubview(lineNumberLabel)
-        containerView.addSubview(contentTextLabel)
-        containerView.addSubview(confidenceLabel)
-        containerView.addSubview(confidenceIconLabel)
-    }
-    
-    private func setupConstraints() {
-        containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(4)
-        }
-        
-        lineNumberLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(12)
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(20)
-        }
-        
-        confidenceIconLabel.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-12)
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(24)
-        }
-        
-        confidenceLabel.snp.makeConstraints { make in
-            make.trailing.equalTo(confidenceIconLabel.snp.leading).offset(-8)
-            make.centerY.equalToSuperview()
-            make.width.equalTo(40)
-            make.height.equalTo(20)
-        }
-        
-        contentTextLabel.snp.makeConstraints { make in
-            make.leading.equalTo(lineNumberLabel.snp.trailing).offset(12)
-            make.trailing.equalTo(confidenceLabel.snp.leading).offset(-8)
-            make.centerY.equalToSuperview()
-        }
-    }
-    
-    func configure(with line: OCRLine) {
-        lineNumberLabel.text = "\(line.confidencePercentage)"
-        contentTextLabel.text = line.text
-        
-        // Configure confidence display
-        confidenceLabel.text = "%\(line.confidencePercentage)"
-        
-        if line.isHighConfidence {
-            confidenceLabel.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.2)
-            confidenceLabel.textColor = .systemGreen
-            confidenceIconLabel.text = "✅"
-        } else {
-            confidenceLabel.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.2)
-            confidenceLabel.textColor = .systemOrange
-            confidenceIconLabel.text = "⚠️"
-        }
-    }
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        contentTextLabel.text = nil
-        lineNumberLabel.text = nil
-        confidenceLabel.text = nil
-        confidenceIconLabel.text = nil
-    }
-}
+
+
 
 
 
