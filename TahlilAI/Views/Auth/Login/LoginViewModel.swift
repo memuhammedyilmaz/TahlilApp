@@ -9,7 +9,7 @@ import Foundation
 import FirebaseAuth
 
 // MARK: - Login ViewModel Protocol
-protocol LoginViewModelProtocol: BaseViewModelProtocol {
+protocol LoginViewModelProtocol: AnyObject {
     var onLoginSuccess: (() -> Void)? { get set }
     var onLoginFailure: ((String) -> Void)? { get set }
     
@@ -19,7 +19,7 @@ protocol LoginViewModelProtocol: BaseViewModelProtocol {
 }
 
 // MARK: - Login ViewModel Implementation
-class LoginViewModel: BaseViewModel, LoginViewModelProtocol {
+class LoginViewModel: NSObject, LoginViewModelProtocol {
     private let userService: UserServiceProtocol
     private let firebaseAuthService: FirebaseAuthService
     
@@ -33,23 +33,18 @@ class LoginViewModel: BaseViewModel, LoginViewModelProtocol {
     }
     
     func login(email: String, password: String) {
-        showLoading()
-        
         // Validation
         guard !email.isEmpty else {
-            hideLoading()
             onLoginFailure?("E-posta adresi gereklidir")
             return
         }
         
         guard !password.isEmpty else {
-            hideLoading()
             onLoginFailure?("Şifre gereklidir")
             return
         }
         
         guard validateEmail(email) else {
-            hideLoading()
             onLoginFailure?("Geçersiz e-posta formatı")
             return
         }
@@ -57,8 +52,6 @@ class LoginViewModel: BaseViewModel, LoginViewModelProtocol {
         // Firebase Authentication
         firebaseAuthService.signIn(email: email, password: password) { [weak self] result in
             DispatchQueue.main.async {
-                self?.hideLoading()
-                
                 switch result {
                 case .success(let user):
                     // Save user to local storage
@@ -72,7 +65,15 @@ class LoginViewModel: BaseViewModel, LoginViewModelProtocol {
         }
     }
     
-    // Validation methods are now inherited from BaseViewModel
+    func validateEmail(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
+    }
+    
+    func validatePassword(_ password: String) -> Bool {
+        return password.count >= 6
+    }
     
     // MARK: - Error Handling
     private func handleAuthError(_ error: Error) {

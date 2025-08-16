@@ -15,14 +15,12 @@ class ScanViewController: UIViewController {
     
     // MARK: - UI Elements
     
-
-    
     private let instructionContainer: UIView = {
         let view = UIView()
-        view.backgroundColor = .cardBackground
+        view.backgroundColor = .white
         view.layer.cornerRadius = 12
         view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.primaryGradientStart.withAlphaComponent(0.3).cgColor
+        view.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
         return view
     }()
     
@@ -31,17 +29,17 @@ class ScanViewController: UIViewController {
         label.text = "📷 Fotoğraf çekin veya galeriden görsel ekleyin\nTahlil sonuçlarınızı Al ile analiz edelim"
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .left
-        label.textColor = .textSecondary
+        label.textColor = .secondaryLabel
         label.numberOfLines = 0
         return label
     }()
     
     private let imageContainerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .cardBackground
+        view.backgroundColor = .white
         view.layer.cornerRadius = 16
         view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.primaryGradientStart.withAlphaComponent(0.3).cgColor
+        view.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
         view.isUserInteractionEnabled = true
         return view
     }()
@@ -59,7 +57,7 @@ class ScanViewController: UIViewController {
         let label = UILabel()
         label.text = "📷 Fotoğraf eklemek için dokunun"
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .textSecondary
+        label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
@@ -69,10 +67,15 @@ class ScanViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("📷 Kamera ile Çek", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
-        button.backgroundColor = .primaryGradientStart
+        button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
-        button.addShadow(color: .primaryGradientStart, opacity: 0.2, radius: 6)
+        // Add shadow manually
+        button.layer.shadowColor = UIColor.systemBlue.cgColor
+        button.layer.shadowOpacity = 0.2
+        button.layer.shadowRadius = 6
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.layer.masksToBounds = false
         return button
     }()
     
@@ -80,10 +83,15 @@ class ScanViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("🖼️ Galeriden Seç", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
-        button.backgroundColor = .statusSuccess
+        button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
-        button.addShadow(color: .statusSuccess, opacity: 0.2, radius: 6)
+        // Add shadow manually
+        button.layer.shadowColor = UIColor.systemGreen.cgColor
+        button.layer.shadowOpacity = 0.2
+        button.layer.shadowRadius = 6
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.layer.masksToBounds = false
         return button
     }()
     
@@ -91,12 +99,17 @@ class ScanViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("🔍 Analiz Et", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        button.backgroundColor = .secondaryGradientStart
+        button.backgroundColor = .systemOrange
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 16
         button.isEnabled = false
         button.alpha = 0.6
-        button.addShadow(color: .secondaryGradientStart, opacity: 0.3, radius: 8)
+        // Add shadow manually
+        button.layer.shadowColor = UIColor.systemOrange.cgColor
+        button.layer.shadowOpacity = 0.3
+        button.layer.shadowRadius = 8
+        button.layer.shadowOffset = CGSize(width: 0, height: 4)
+        button.layer.masksToBounds = false
         return button
     }()
     
@@ -105,7 +118,7 @@ class ScanViewController: UIViewController {
         label.text = "💎 Kalan Kredi: 100"
         label.font = .systemFont(ofSize: 16, weight: .bold)
         label.textAlignment = .center
-        label.textColor = .primaryGradientStart
+        label.textColor = .systemBlue
         return label
     }()
     
@@ -113,13 +126,12 @@ class ScanViewController: UIViewController {
         let label = UILabel()
         label.text = "Görsel analiz ediliyor..."
         label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textColor = .textSecondary
+        label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.isHidden = true
         return label
     }()
 
-    
     // MARK: - Properties
     private let viewModel = ScanViewModel()
     private var selectedImage: UIImage?
@@ -134,28 +146,19 @@ class ScanViewController: UIViewController {
         setupActions()
     }
     
-
-    
-
-    
     // MARK: - Setup
     private func setupNavigationBar() {
         title = "Tahlil Tara"
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationController?.navigationBar.largeTitleTextAttributes = [
-            .foregroundColor: UIColor.textPrimary,
+            .foregroundColor: UIColor.label,
             .font: UIFont.systemFont(ofSize: 34, weight: .bold)
         ]
     }
     
     private func setupUI() {
-        // Gradient background
-        view.addGradientBackground(
-            startColor: .backgroundPrimary,
-            endColor: .backgroundSecondary,
-            startPoint: CGPoint(x: 0, y: 0),
-            endPoint: CGPoint(x: 1, y: 1)
-        )
+        // Simple background color instead of gradient
+        view.backgroundColor = .systemBackground
         
         view.addSubview(instructionContainer)
         view.addSubview(imageContainerView)
@@ -225,42 +228,6 @@ class ScanViewController: UIViewController {
             make.top.equalTo(creditLabel.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(20)
         }
-        
-        // Özet label için padding ekle
-        // resultsSummaryLabel.snp.makeConstraints { make in
-        //     make.leading.equalToSuperview().offset(28)
-        //     make.trailing.equalToSuperview().offset(-28)
-        // }
-        
-        // resultsTableView.snp.makeConstraints { make in
-        //     make.top.equalTo(resultsSummaryLabel.snp.bottom).offset(20)
-        //     make.leading.trailing.equalToSuperview().inset(16)
-        //     make.bottom.equalTo(confidenceFilterContainer.snp.top).offset(-20)
-        // }
-        
-        // confidenceFilterContainer.snp.makeConstraints { make in
-        //     make.leading.trailing.equalToSuperview().inset(16)
-        //     make.bottom.equalTo(actionButtonsStackView.snp.top).offset(-16)
-        //     make.height.equalTo(50)
-        // }
-        
-        // confidenceFilterLabel.snp.makeConstraints { make in
-        //     make.leading.equalToSuperview().offset(12)
-        //     make.centerY.equalToSuperview()
-        // }
-        
-        // confidenceSlider.snp.makeConstraints { make in
-        //     make.leading.equalTo(confidenceFilterLabel.snp.trailing).offset(12)
-        //     make.trailing.equalToSuperview().offset(-12)
-        //     make.centerY.equalToSuperview()
-        // }
-        
-        // actionButtonsStackView.snp.makeConstraints { make in
-        //     make.leading.trailing.bottom.equalToSuperview().inset(16)
-        //     make.height.equalTo(40)
-        // }
-
-
     }
     
     private func setupActions() {
@@ -270,16 +237,7 @@ class ScanViewController: UIViewController {
         cameraButton.addTarget(self, action: #selector(cameraButtonTapped), for: .touchUpInside)
         galleryButton.addTarget(self, action: #selector(galleryButtonTapped), for: .touchUpInside)
         analyzeButton.addTarget(self, action: #selector(analyzeButtonTapped), for: .touchUpInside)
-        // copyAllButton.addTarget(self, action: #selector(copyAllButtonTapped), for: .touchUpInside)
-        // exportButton.addTarget(self, action: #selector(exportButtonTapped), for: .touchUpInside)
-        // confidenceSlider.addTarget(self, action: #selector(confidenceSliderChanged), for: .valueChanged)
-        
-        // Table view delegate ve data source'u set et
-        // resultsTableView.delegate = self
-        // resultsTableView.dataSource = self
     }
-    
-
     
     // MARK: - Actions
     @objc private func imageContainerTapped() {
@@ -329,17 +287,6 @@ class ScanViewController: UIViewController {
         viewModel.processImage(image)
     }
     
-
-    
-
-    
-
-    
-    @objc private func freeCropTapped() {
-        // TODO: Implement free-form cropping with custom crop view
-        showAlert(message: "Serbest kırpma özelliği yakında eklenecek!")
-    }
-    
     // MARK: - Helper Methods
     private func showImageSourceAlert() {
         let alert = UIAlertController(title: "Fotoğraf Seç", message: "Fotoğraf kaynağını seçin", preferredStyle: .actionSheet)
@@ -369,7 +316,7 @@ class ScanViewController: UIViewController {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .camera
         imagePicker.delegate = self
-        imagePicker.allowsEditing = true // Kırpma özelliğini etkinleştir
+        imagePicker.allowsEditing = true
         present(imagePicker, animated: true)
     }
     
@@ -377,7 +324,7 @@ class ScanViewController: UIViewController {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .photoLibrary
         imagePicker.delegate = self
-        imagePicker.allowsEditing = true // Kırpma özelliğini etkinleştir
+        imagePicker.allowsEditing = true
         present(imagePicker, animated: true)
     }
     
@@ -403,10 +350,6 @@ class ScanViewController: UIViewController {
         let alert = UIAlertController(title: "Bilgi", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         present(alert, animated: true)
-    }
-    
-    private func showAnalysisResult() {
-        // This method is no longer needed as we handle results in handleAnalysisComplete
     }
     
     private func handleAnalysisComplete(_ ocrResult: OCRResult) {
@@ -459,8 +402,6 @@ class ScanViewController: UIViewController {
         print(String(repeating: "=", count: 100))
     }
     
-
-    
     private func handleAnalysisError(_ errorMessage: String) {
         progressLabel.isHidden = true
         analyzeButton.isEnabled = true
@@ -469,106 +410,12 @@ class ScanViewController: UIViewController {
         showAlert(message: errorMessage)
     }
     
-    private func scrollToResults() {
-        // let resultsFrame = resultsContainer.frame
-        // let scrollPoint = CGPoint(x: 0, y: resultsFrame.origin.y - 100)
-        
-        // scrollView.setContentOffset(scrollPoint, animated: true)
-    }
-    
-    @objc private func copyAllButtonTapped() {
-        guard let ocrResults = ocrResults else { return }
-        
-        let allText = ocrResults.lines.map { line in
-            "[%\(line.confidencePercentage)] \(line.text)"
-        }.joined(separator: "\n")
-        
-        UIPasteboard.general.string = allText
-        
-        // Show success feedback
-        let feedback = UINotificationFeedbackGenerator()
-        feedback.notificationOccurred(.success)
-        
-        showAlert(message: "Tüm OCR sonuçları panoya kopyalandı!")
-    }
-    
-    @objc private func exportButtonTapped() {
-        guard let ocrResults = ocrResults else { return }
-        
-        // Create CSV format
-        var csvContent = "Satır,Güven,Metin\n"
-        
-        for (index, line) in ocrResults.lines.enumerated() {
-            let escapedText = line.text.replacingOccurrences(of: "\"", with: "\"\"")
-            csvContent += "\(index + 1),%\(line.confidencePercentage),\"\(escapedText)\"\n"
-        }
-        
-        // Create temporary file
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("OCR_Results.csv")
-        
-        do {
-            try csvContent.write(to: tempURL, atomically: true, encoding: .utf8)
-            
-            // Share the file
-            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
-            
-            // For iPad
-            if let popover = activityVC.popoverPresentationController {
-                // popover.sourceView = exportButton
-                // popover.sourceRect = exportButton.bounds
-            }
-            
-            present(activityVC, animated: true)
-            
-        } catch {
-            showAlert(message: "Dışa aktarma hatası: \(error.localizedDescription)")
-        }
-    }
-    
-    @objc private func confidenceSliderChanged() {
-        // let confidence = Int(confidenceSlider.value * 100)
-        // confidenceFilterLabel.text = "🎯 Güven Filtresi: %\(confidence)"
-        
-        // // Re-filter results if available
-        // if let ocrResults = ocrResults {
-        //     let filteredLines = ocrResults.lines.filter { $0.confidence >= confidenceSlider.value }
-        //     let filteredResult = OCRResult(
-        //         lines: filteredLines,
-        //         fullText: filteredLines.map { $0.text }.joined(separator: "\n"),
-        //         totalLines: filteredLines.count,
-        //         averageConfidence: Double(filteredLines.map { $0.confidence }.reduce(0, +)) / Double(max(filteredLines.count, 1))
-        //     )
-            
-        //     // Update summary
-        //     let summaryText = """
-        //     📝 Toplam Satır: \(filteredResult.totalLines)
-        //     🎯 Ortalama Güven: %\(filteredResult.averageConfidencePercentage)
-        //     ✅ Yüksek Güvenli: \(filteredResult.highConfidenceLines.count)
-        //     ⚠️ Düşük Güvenli: \(filteredResult.lowConfidenceLines.count)
-        //     """
-        //     resultsSummaryLabel.text = summaryText
-            
-        //     // Reload table view
-        //     resultsTableView.reloadData()
-        // }
-    }
-
-    
-    private func navigateToHistory() {
-        let historyVC = HistoryViewController()
-        let navController = UINavigationController(rootViewController: historyVC)
-        present(navController, animated: true)
-    }
-    
     private func updateUIForSelectedImage() {
         placeholderLabel.isHidden = true
         analyzeButton.isEnabled = true
         analyzeButton.alpha = 1.0
         
         // Reset previous results
-        // resultsContainer.isHidden = true
-        // confidenceFilterContainer.isHidden = true
-        // actionButtonsStackView.isHidden = true
         ocrResults = nil
     }
 }

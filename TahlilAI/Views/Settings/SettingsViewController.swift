@@ -141,46 +141,26 @@ class SettingsViewController: UIViewController {
     }
     
     private func showKVKKSettings() {
-        let alert = UIAlertController(title: "KVKK İzni", message: nil, preferredStyle: .actionSheet)
-        
-        // Show current consent status
-        let consentStatus = KVKKManager.shared.getConsentStatus()
-        alert.message = consentStatus.description
+        let alert = UIAlertController(title: "KVKK İzni", message: "KVKK izinleri bu sürümde henüz aktif değil", preferredStyle: .actionSheet)
         
         // Add actions
-        alert.addAction(UIAlertAction(title: "İzni Geri Al", style: .destructive) { _ in
-            self.revokeKVKKConsent()
-        })
-        
-        alert.addAction(UIAlertAction(title: "Verilerimi Sil", style: .destructive) { _ in
-            self.deleteUserData()
-        })
-        
-        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         
         present(alert, animated: true)
     }
     
     private func revokeKVKKConsent() {
-        let alert = UIAlertController(title: "KVKK İzni Geri Al", message: "KVKK izninizi geri almak istediğinizden emin misiniz? Bu işlem uygulamadan çıkış yapmanıza neden olacaktır.", preferredStyle: .alert)
+        let alert = UIAlertController(title: "KVKK İzni Geri Al", message: "KVKK izinleri bu sürümde henüz aktif değil", preferredStyle: .alert)
         
-        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Geri Al", style: .destructive) { _ in
-            KVKKManager.shared.revokeConsent()
-            self.logout()
-        })
+        alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         
         present(alert, animated: true)
     }
     
     private func deleteUserData() {
-        let alert = UIAlertController(title: "Veri Silme", message: "Tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz. Devam etmek istediğinizden emin misiniz?", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Veri Silme", message: "Veri silme özelliği bu sürümde henüz aktif değil", preferredStyle: .alert)
         
-        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Sil", style: .destructive) { _ in
-            KVKKManager.shared.deleteUserData()
-            self.logout()
-        })
+        alert.addAction(UIAlertAction(title: "Tamam", style: .default))
         
         present(alert, animated: true)
     }
@@ -273,7 +253,7 @@ class SettingsTableViewCell: UITableViewCell {
         contentView.addSubview(accessoryImageView)
         
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .primaryGradientStart
+        iconImageView.tintColor = .systemBlue
         
         titleLabel.font = .systemFont(ofSize: 16)
         titleLabel.textColor = .label

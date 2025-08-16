@@ -12,7 +12,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
@@ -23,25 +22,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.rootViewController = launchScreenVC
         window?.makeKeyAndVisible()
         
-        // After a short delay, check KVKK consent and authentication
+        // After a short delay, check authentication
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            // First check KVKK consent
-            if !KVKKManager.shared.hasUserConsented() {
-                // Show KVKK consent form
-                let kvkkVC = KVKKViewController()
-                kvkkVC.onConsentGiven = {
-                    // After consent, check authentication
-                    self.checkAuthenticationAndNavigate()
-                }
-                kvkkVC.onConsentDeclined = {
-                    // User declined, exit app
-                    exit(0)
-                }
-                self.window?.rootViewController = kvkkVC
-            } else {
-                // KVKK consent already given, check authentication
-                self.checkAuthenticationAndNavigate()
-            }
+            self.checkAuthenticationAndNavigate()
         }
     }
 
@@ -58,7 +41,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
+        // Called as the scene will move from an active state to an inactive state.
         // This may occur due to temporary interruptions (ex. an incoming phone call).
     }
 
@@ -88,6 +71,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window?.rootViewController = navController
         }
     }
-
 }
 

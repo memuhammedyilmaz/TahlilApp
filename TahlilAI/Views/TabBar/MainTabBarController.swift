@@ -16,12 +16,16 @@ class MainTabBarController: UITabBarController {
     }
     
     private func setupTabBar() {
-        tabBar.backgroundColor = .cardBackground
-        tabBar.tintColor = .primaryGradientStart
-        tabBar.unselectedItemTintColor = .textLight
+        tabBar.backgroundColor = .white
+        tabBar.tintColor = .systemBlue
+        tabBar.unselectedItemTintColor = .systemGray
         
-        // Add modern shadow to tab bar
-        tabBar.addShadow(color: .primaryGradientStart, opacity: 0.15, radius: 12, offset: CGSize(width: 0, height: -3))
+        // Add modern shadow to tab bar manually
+        tabBar.layer.shadowColor = UIColor.systemBlue.cgColor
+        tabBar.layer.shadowOpacity = 0.15
+        tabBar.layer.shadowRadius = 12
+        tabBar.layer.shadowOffset = CGSize(width: 0, height: -3)
+        tabBar.layer.masksToBounds = false
     }
     
         private func setupViewControllers() {

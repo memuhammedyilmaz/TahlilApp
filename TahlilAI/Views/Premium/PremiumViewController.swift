@@ -23,7 +23,8 @@ class PremiumViewController: UIViewController {
     private let premiumIconView: UIView = {
         let view = UIView()
         view.backgroundColor = .systemYellow
-        view.roundCorners(25)
+        view.layer.cornerRadius = 25
+        view.layer.masksToBounds = true
         return view
     }()
     
@@ -64,9 +65,15 @@ class PremiumViewController: UIViewController {
     
     private let pricingCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .cardBackground
-        view.roundCorners(20)
-        view.addShadow()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 20
+        view.layer.masksToBounds = true
+        // Add shadow manually
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.1
+        view.layer.shadowRadius = 10
+        view.layer.shadowOffset = CGSize(width: 0, height: 4)
+        view.layer.masksToBounds = false
         return view
     }()
     
@@ -83,7 +90,7 @@ class PremiumViewController: UIViewController {
         let label = UILabel()
         label.text = "₺19.99"
         label.font = .systemFont(ofSize: 32, weight: .bold)
-        label.textColor = .accentGreen
+        label.textColor = .systemGreen
         label.textAlignment = .center
         return label
     }()
@@ -102,15 +109,16 @@ class PremiumViewController: UIViewController {
         button.setTitle("Premium'a Geç", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
-        button.backgroundColor = .accentGreen
-        button.roundCorners(25)
+        button.backgroundColor = .systemGreen
+        button.layer.cornerRadius = 25
+        button.layer.masksToBounds = true
         return button
     }()
     
     private let restoreButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Satın Alımları Geri Yükle", for: .normal)
-        button.setTitleColor(.accentGreen, for: .normal)
+        button.setTitleColor(.systemGreen, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14)
         button.backgroundColor = .clear
         return button
@@ -182,9 +190,15 @@ class PremiumViewController: UIViewController {
     
     private func createFeatureView(icon: String, title: String, description: String) -> UIView {
         let containerView = UIView()
-        containerView.backgroundColor = .cardBackground
-        containerView.roundCorners(16)
-        containerView.addShadow()
+        containerView.backgroundColor = .white
+        containerView.layer.cornerRadius = 16
+        containerView.layer.masksToBounds = true
+        // Add shadow manually
+        containerView.layer.shadowColor = UIColor.black.cgColor
+        containerView.layer.shadowOpacity = 0.1
+        containerView.layer.shadowRadius = 10
+        containerView.layer.shadowOffset = CGSize(width: 0, height: 4)
+        containerView.layer.masksToBounds = false
         
         let iconLabel = UILabel()
         iconLabel.text = icon

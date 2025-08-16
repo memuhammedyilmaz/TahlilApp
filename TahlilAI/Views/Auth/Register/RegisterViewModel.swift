@@ -9,7 +9,7 @@ import Foundation
 import FirebaseAuth
 
 // MARK: - Register ViewModel Protocol
-protocol RegisterViewModelProtocol: BaseViewModelProtocol {
+protocol RegisterViewModelProtocol: AnyObject {
     var onRegisterSuccess: (() -> Void)? { get set }
     var onRegisterFailure: ((String) -> Void)? { get set }
     
@@ -20,7 +20,7 @@ protocol RegisterViewModelProtocol: BaseViewModelProtocol {
 }
 
 // MARK: - Register ViewModel Implementation
-class RegisterViewModel: BaseViewModel, RegisterViewModelProtocol {
+class RegisterViewModel: NSObject, RegisterViewModelProtocol {
     private let userService: UserServiceProtocol
     private let firebaseAuthService: FirebaseAuthService
     
@@ -34,29 +34,23 @@ class RegisterViewModel: BaseViewModel, RegisterViewModelProtocol {
     }
     
     func register(name: String, email: String, password: String, confirmPassword: String) {
-        showLoading()
-        
         // Validation
         guard validateName(name) else {
-            hideLoading()
             onRegisterFailure?("Ad soyad gereklidir")
             return
         }
         
         guard validateEmail(email) else {
-            hideLoading()
             onRegisterFailure?("Geçersiz e-posta formatı")
             return
         }
         
         guard validatePassword(password) else {
-            hideLoading()
             onRegisterFailure?("Şifre en az 6 karakter olmalıdır")
             return
         }
         
         guard password == confirmPassword else {
-            hideLoading()
             onRegisterFailure?("Şifreler eşleşmiyor")
             return
         }
@@ -64,8 +58,6 @@ class RegisterViewModel: BaseViewModel, RegisterViewModelProtocol {
         // Firebase Authentication
         firebaseAuthService.signUp(email: email, password: password, name: name) { [weak self] result in
             DispatchQueue.main.async {
-                self?.hideLoading()
-                
                 switch result {
                 case .success(let user):
                     // Save user to local storage
@@ -79,7 +71,19 @@ class RegisterViewModel: BaseViewModel, RegisterViewModelProtocol {
         }
     }
     
-    // Validation methods are now inherited from BaseViewModel
+    func validateEmail(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
+    }
+    
+    func validatePassword(_ password: String) -> Bool {
+        return password.count >= 6
+    }
+    
+    func validateName(_ name: String) -> Bool {
+        return !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
     
     // MARK: - Error Handling
     private func handleAuthError(_ error: Error) {
