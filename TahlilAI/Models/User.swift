@@ -41,7 +41,7 @@ struct User: UserProtocol {
          height: Double? = nil,
          weight: Double? = nil,
          age: Int? = nil,
-         credits: Int = 100,
+         credits: Int = 10,
          isPremium: Bool = false,
          theme: String = "system") {
         self.id = id

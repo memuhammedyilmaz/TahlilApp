@@ -19,8 +19,8 @@ class ScanViewController: UIViewController {
         let view = UIView()
         view.backgroundColor = .white
         view.layer.cornerRadius = 12
-        view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
+        view.layer.borderWidth = 1.5
+        view.layer.borderColor = UIColor.systemPurple.withAlphaComponent(0.3).cgColor
         return view
     }()
     
@@ -28,7 +28,7 @@ class ScanViewController: UIViewController {
         let label = UILabel()
         label.text = "📷 Fotoğraf çekin veya galeriden görsel ekleyin\nTahlil sonuçlarınızı Al ile analiz edelim"
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textAlignment = .left
+        label.textAlignment = .center
         label.textColor = .secondaryLabel
         label.numberOfLines = 0
         return label
@@ -38,8 +38,8 @@ class ScanViewController: UIViewController {
         let view = UIView()
         view.backgroundColor = .white
         view.layer.cornerRadius = 16
-        view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
+        view.layer.borderWidth = 1.5
+        view.layer.borderColor = UIColor.systemPurple.withAlphaComponent(0.3).cgColor
         view.isUserInteractionEnabled = true
         return view
     }()
@@ -99,13 +99,13 @@ class ScanViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("🔍 Analiz Et", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        button.backgroundColor = .systemOrange
+        button.backgroundColor = .systemPurple
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 16
         button.isEnabled = false
         button.alpha = 0.6
         // Add shadow manually
-        button.layer.shadowColor = UIColor.systemOrange.cgColor
+        button.layer.shadowColor = UIColor.systemPurple.cgColor
         button.layer.shadowOpacity = 0.3
         button.layer.shadowRadius = 8
         button.layer.shadowOffset = CGSize(width: 0, height: 4)
@@ -115,7 +115,7 @@ class ScanViewController: UIViewController {
     
     private let creditLabel: UILabel = {
         let label = UILabel()
-        label.text = "💎 Kalan Kredi: 100"
+        label.text = "💎 Kalan Kredi: 10"
         label.font = .systemFont(ofSize: 16, weight: .bold)
         label.textAlignment = .center
         label.textColor = .systemBlue
@@ -445,7 +445,9 @@ extension ScanViewController: UIImagePickerControllerDelegate, UINavigationContr
 
 
 
-
+#Preview {
+    ScanViewController()
+}
 
 
 

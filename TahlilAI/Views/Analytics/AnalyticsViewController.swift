@@ -137,7 +137,7 @@ class AnalyticsViewController: UIViewController {
         chartContainerView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo((view.frame.height - 200) / 2 - 75)
+            make.height.equalTo((view.frame.height - 200) / 2 - 50)
         }
         
         chartTitleLabel.snp.makeConstraints { make in
@@ -152,7 +152,7 @@ class AnalyticsViewController: UIViewController {
         statsContainerView.snp.makeConstraints { make in
             make.top.equalTo(chartContainerView.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo((view.frame.height - 200) / 2 - 75)
+            make.height.equalTo((view.frame.height - 200) / 2 - 50)
         }
         
         statsTitleLabel.snp.makeConstraints { make in
@@ -160,7 +160,7 @@ class AnalyticsViewController: UIViewController {
         }
         
         totalTestsLabel.snp.makeConstraints { make in
-            make.top.equalTo(statsTitleLabel.snp.bottom).offset(30)
+            make.top.equalTo(statsTitleLabel.snp.bottom).offset(60)
             make.centerX.equalToSuperview()
         }
         
@@ -188,3 +188,6 @@ class AnalyticsViewController: UIViewController {
     }
 }
 
+#Preview {
+    AnalyticsViewController()
+}

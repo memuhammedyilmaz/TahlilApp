@@ -17,11 +17,11 @@ class MainTabBarController: UITabBarController {
     
     private func setupTabBar() {
         tabBar.backgroundColor = .white
-        tabBar.tintColor = .systemBlue
+        tabBar.tintColor = .systemPurple
         tabBar.unselectedItemTintColor = .systemGray
         
         // Add modern shadow to tab bar manually
-        tabBar.layer.shadowColor = UIColor.systemBlue.cgColor
+        tabBar.layer.shadowColor = UIColor.systemPurple.cgColor
         tabBar.layer.shadowOpacity = 0.15
         tabBar.layer.shadowRadius = 12
         tabBar.layer.shadowOffset = CGSize(width: 0, height: -3)

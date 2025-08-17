@@ -253,7 +253,7 @@ class SettingsTableViewCell: UITableViewCell {
         contentView.addSubview(accessoryImageView)
         
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .systemBlue
+        iconImageView.tintColor = .systemPurple
         
         titleLabel.font = .systemFont(ofSize: 16)
         titleLabel.textColor = .label
