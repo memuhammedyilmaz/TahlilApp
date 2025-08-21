@@ -47,7 +47,7 @@ class MainTabBarController: UITabBarController {
         )
 
         premiumVC.tabBarItem = UITabBarItem(
-            title: "Premium",
+            title: "Premiummmm",
             image: UIImage(systemName: "crown.fill"),
             selectedImage: UIImage(systemName: "crown.fill")
         )
