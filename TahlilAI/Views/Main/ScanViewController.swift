@@ -9,7 +9,6 @@ import UIKit
 import PhotosUI
 import SnapKit
 import AVFoundation
-import Vision
 
 class ScanViewController: UIViewController {
     
@@ -26,7 +25,7 @@ class ScanViewController: UIViewController {
     
     private let instructionLabel: UILabel = {
         let label = UILabel()
-        label.text = "📷 Fotoğraf çekin veya galeriden görsel ekleyin\nTahlil sonuçlarınızı Al ile analiz edelim"
+        label.text = "📷 Fotoğraf çekin veya galeriden görsel ekleyin\nGörseli AI ile analiz edelim"
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.textColor = .secondaryLabel
@@ -70,12 +69,6 @@ class ScanViewController: UIViewController {
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
-        // Add shadow manually
-        button.layer.shadowColor = UIColor.systemBlue.cgColor
-        button.layer.shadowOpacity = 0.2
-        button.layer.shadowRadius = 6
-        button.layer.shadowOffset = CGSize(width: 0, height: 2)
-        button.layer.masksToBounds = false
         return button
     }()
     
@@ -86,30 +79,18 @@ class ScanViewController: UIViewController {
         button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
-        // Add shadow manually
-        button.layer.shadowColor = UIColor.systemGreen.cgColor
-        button.layer.shadowOpacity = 0.2
-        button.layer.shadowRadius = 6
-        button.layer.shadowOffset = CGSize(width: 0, height: 2)
-        button.layer.masksToBounds = false
         return button
     }()
     
     private let analyzeButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("🔍 Analiz Et", for: .normal)
+        button.setTitle("🤖 AI ile Analiz Et", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
         button.backgroundColor = .systemPurple
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 16
         button.isEnabled = false
         button.alpha = 0.6
-        // Add shadow manually
-        button.layer.shadowColor = UIColor.systemPurple.cgColor
-        button.layer.shadowOpacity = 0.3
-        button.layer.shadowRadius = 8
-        button.layer.shadowOffset = CGSize(width: 0, height: 4)
-        button.layer.masksToBounds = false
         return button
     }()
     
@@ -124,7 +105,7 @@ class ScanViewController: UIViewController {
     
     private let progressLabel: UILabel = {
         let label = UILabel()
-        label.text = "Görsel analiz ediliyor..."
+        label.text = "Görsel AI ile analiz ediliyor..."
         label.font = .systemFont(ofSize: 14, weight: .medium)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
@@ -135,7 +116,7 @@ class ScanViewController: UIViewController {
     // MARK: - Properties
     private let viewModel = ScanViewModel()
     private var selectedImage: UIImage?
-    private var ocrResults: OCRResult?
+    private var aiResults: String?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -148,7 +129,7 @@ class ScanViewController: UIViewController {
     
     // MARK: - Setup
     private func setupNavigationBar() {
-        title = "Tahlil Tara"
+        title = "AI Görsel Analiz"
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationController?.navigationBar.largeTitleTextAttributes = [
             .foregroundColor: UIColor.label,
@@ -249,7 +230,7 @@ class ScanViewController: UIViewController {
             if granted {
                 self.openCamera()
             } else {
-                self.showPermissionAlert(for: "kamera")
+                self.showPermissionAlert(for: "Kamera")
             }
         }
     }
@@ -259,7 +240,7 @@ class ScanViewController: UIViewController {
             if granted {
                 self.openPhotoLibrary()
             } else {
-                self.showPermissionAlert(for: "galeri")
+                self.showPermissionAlert(for: " Galeri")
             }
         }
     }
@@ -272,15 +253,15 @@ class ScanViewController: UIViewController {
         analyzeButton.isEnabled = false
         analyzeButton.alpha = 0.6
         
-        viewModel.onAnalysisComplete = { [weak self] ocrResult in
-            self?.handleAnalysisComplete(ocrResult)
+        viewModel.onAnalysisComplete = { [weak self] aiResult in
+            self?.handleAnalysisComplete(aiResult)
         }
         
         viewModel.onAnalysisError = { [weak self] errorMessage in
             self?.handleAnalysisError(errorMessage)
         }
         
-        viewModel.onOCRProgress = { [weak self] progressMessage in
+        viewModel.onAIProgress = { [weak self] progressMessage in
             self?.progressLabel.text = progressMessage
         }
         
@@ -316,7 +297,7 @@ class ScanViewController: UIViewController {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .camera
         imagePicker.delegate = self
-        imagePicker.allowsEditing = true
+        imagePicker.allowsEditing = false
         present(imagePicker, animated: true)
     }
     
@@ -324,7 +305,7 @@ class ScanViewController: UIViewController {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .photoLibrary
         imagePicker.delegate = self
-        imagePicker.allowsEditing = true
+        imagePicker.allowsEditing = false
         present(imagePicker, animated: true)
     }
     
@@ -352,54 +333,24 @@ class ScanViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    private func handleAnalysisComplete(_ ocrResult: OCRResult) {
-        self.ocrResults = ocrResult
+    private func handleAnalysisComplete(_ aiResult: String) {
+        self.aiResults = aiResult
         
         // Update UI
         progressLabel.isHidden = true
         analyzeButton.isEnabled = true
         analyzeButton.alpha = 1.0
         
-        // OCR sonuçlarını dizi formatında print et
-        printOCRResultsAsArray(ocrResult)
+        // AI sonuçlarını print et
+        printAIResults(aiResult)
         
         // Kullanıcıya bilgi ver
-        showAlert(message: "OCR analizi tamamlandı! Sonuçlar konsola yazdırıldı.")
+        showAlert(message: "AI analizi tamamlandı! Sonuçlar konsola yazdırıldı.")
     }
     
-    /// OCR sonuçlarını tablo formatında print eder
-    private func printOCRResultsAsArray(_ ocrResult: OCRResult) {
-        print("🔍 OCR Analiz Sonucu - Tablo Formatında:")
-        print(String(repeating: "=", count: 100))
-        
-        // Tablo başlığı
-        print("📋 LABORATUVAR TEST SONUÇLARI")
-        print(String(repeating: "-", count: 100))
-        
-        // Tablo sütun başlıkları
-        print("No  Test Adı                    Sonuç          Birim         Referans Değeri")
-        print(String(repeating: "-", count: 100))
-        
-        // Her satır için tablo formatında
-        for (index, line) in ocrResult.lines.enumerated() {
-            let lineNumber = String(format: "%-4d", index + 1)
-            let testName = String(line.text.prefix(25)).padding(toLength: 25, withPad: " ", startingAt: 0)
-            let result = String(line.text.prefix(15)).padding(toLength: 15, withPad: " ", startingAt: 0)
-            let unit = String(line.text.prefix(12)).padding(toLength: 12, withPad: " ", startingAt: 0)
-            let reference = String(line.text.prefix(40)).padding(toLength: 40, withPad: " ", startingAt: 0)
-            
-            print("\(lineNumber) \(testName) \(result) \(unit) \(reference)")
-        }
-        
-        print(String(repeating: "-", count: 100))
-        
-        // Özet bilgileri
-        print("📊 TABLO ÖZETİ:")
-        print("📝 Toplam Test: \(ocrResult.totalLines)")
-        print("🎯 Ortalama Güven: %\(ocrResult.averageConfidencePercentage)")
-        print("✅ Yüksek Güvenli: \(ocrResult.highConfidenceLines.count)")
-        print("⚠️ Düşük Güvenli: \(ocrResult.lowConfidenceLines.count)")
-        print(String(repeating: "=", count: 100))
+    /// AI sonuçlarını print eder
+    private func printAIResults(_ aiResult: String) {
+        print("🤖 AI Analiz Sonucu:")
     }
     
     private func handleAnalysisError(_ errorMessage: String) {
@@ -416,25 +367,21 @@ class ScanViewController: UIViewController {
         analyzeButton.alpha = 1.0
         
         // Reset previous results
-        ocrResults = nil
+        aiResults = nil
     }
 }
 
 // MARK: - UIImagePickerControllerDelegate
 extension ScanViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        // Kırpılmış resmi al, yoksa orijinal resmi kullan
-        if let editedImage = info[.editedImage] as? UIImage {
-            selectedImage = editedImage
-            imageView.image = editedImage
-            print("✅ Kırpılmış resim seçildi")
-        } else if let originalImage = info[.originalImage] as? UIImage {
+        // Orijinal resmi al ve direkt kullan
+        if let originalImage = info[.originalImage] as? UIImage {
             selectedImage = originalImage
             imageView.image = originalImage
-            print("📷 Orijinal resim seçildi (kırpılmadı)")
+            updateUIForSelectedImage()
+            print("📷 Resim seçildi - boyut: \(originalImage.size)")
         }
         
-        updateUIForSelectedImage()
         picker.dismiss(animated: true)
     }
     
@@ -442,15 +389,3 @@ extension ScanViewController: UIImagePickerControllerDelegate, UINavigationContr
         picker.dismiss(animated: true)
     }
 }
-
-
-
-#Preview {
-    ScanViewController()
-}
-
-
-
-
-
-

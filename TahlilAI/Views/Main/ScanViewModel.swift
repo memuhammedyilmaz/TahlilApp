@@ -7,67 +7,49 @@
 
 import Foundation
 import UIKit
-import Vision
 
 class ScanViewModel: NSObject {
     
-    var onAnalysisComplete: ((OCRResult) -> Void)?
+    var onAnalysisComplete: ((String) -> Void)?
     var onAnalysisError: ((String) -> Void)?
-    var onOCRProgress: ((String) -> Void)?
+    var onAIProgress: ((String) -> Void)?
     
     func processImage(_ image: UIImage) {
-        print("🔍 OCR işlemi başlatılıyor...")
-        onOCRProgress?("Görsel analiz ediliyor...")
+        print("🤖 AI tabanlı metin tanıma başlatılıyor...")
+        onAIProgress?("Görsel AI ile analiz ediliyor...")
         
-        // Perform OCR with detailed line-by-line results
-        ImageCaptureService.shared.performOCRWithDetails(on: image) { [weak self] ocrResult in
+        // Perform AI-based text recognition
+        ImageCaptureService.shared.performAITextRecognition(on: image) { [weak self] extractedText in
             guard let self = self else { return }
             
-            if let result = ocrResult {
-                // OCR successful - process the line-by-line results
-                print("✅ OCR Başarılı!")
-                print("📊 OCR Sonuçları:")
-                print("==================================================")
-                print("📝 Toplam Satır: \(result.totalLines)")
-                print("🎯 Ortalama Güven: %\(result.averageConfidencePercentage)")
-                print("🔍 Yüksek Güvenli Satırlar: \(result.highConfidenceLines.count)")
-                print("⚠️ Düşük Güvenli Satırlar: \(result.lowConfidenceLines.count)")
-                print("==================================================")
-                print("📋 Satır Satır Sonuçlar:")
-                
-                for (index, line) in result.lines.enumerated() {
-                    let confidenceIcon = line.isHighConfidence ? "✅" : "⚠️"
-                    print("\(index + 1). [%\(line.confidencePercentage)] \(confidenceIcon) \(line.text)")
-                }
-                print("==================================================")
+            if let text = extractedText {
+                print("✅ AI Metin Tanıma Başarılı!")
                 
                 DispatchQueue.main.async {
-                    self.onAnalysisComplete?(result)
+                    self.onAnalysisComplete?(text)
                 }
             } else {
-                // OCR failed
-                print("❌ OCR Başarısız: Görselden metin çıkarılamadı")
-                self.onAnalysisError?("Görselden metin çıkarılamadı. Lütfen daha net bir fotoğraf deneyin.")
+                // AI recognition failed
+                print("❌ AI Metin Tanıma Başarısız: Görselden metin çıkarılamadı")
+                DispatchQueue.main.async {
+                    self.onAnalysisError?("AI metin tanıma başarısız")
+                }
             }
         }
     }
     
-    func performOCR(on image: UIImage, completion: @escaping (String?) -> Void) {
-        ImageCaptureService.shared.performOCR(on: image, completion: completion)
+    func performAITextRecognition(on image: UIImage, completion: @escaping (String?) -> Void) {
+        ImageCaptureService.shared.performAITextRecognition(on: image, completion: completion)
     }
     
-    func performOCRWithDetails(on image: UIImage, completion: @escaping (OCRResult?) -> Void) {
-        ImageCaptureService.shared.performOCRWithDetails(on: image, completion: completion)
-    }
-    
-    func performOCRWithCustomSettings(on image: UIImage, 
-                                    recognitionLevel: VNRequestTextRecognitionLevel = .accurate,
-                                    languages: [String] = ["tr-TR"],
-                                    completion: @escaping (String?) -> Void) {
-        ImageCaptureService.shared.performOCR(on: image, 
-                                            recognitionLevel: recognitionLevel,
-                                            languages: languages,
-                                            completion: completion)
+    func performAITextRecognitionWithCustomSettings(on image: UIImage, 
+                                                   model: String = "default",
+                                                   confidence: Float = 0.8,
+                                                   completion: @escaping (String?) -> Void) {
+        ImageCaptureService.shared.performAITextRecognition(on: image, 
+                                                          model: model,
+                                                          confidence: confidence,
+                                                          completion: completion)
     }
     
     func checkCameraPermission(completion: @escaping (Bool) -> Void) {
