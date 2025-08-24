@@ -41,9 +41,9 @@ class MainTabBarController: UITabBarController {
         )
 
         analyticsVC.tabBarItem = UITabBarItem(
-            title: "Analiz",
-            image: UIImage(systemName: "chart.line.uptrend.xyaxis"),
-            selectedImage: UIImage(systemName: "chart.line.uptrend.xyaxis")
+            title: "Sonuçlar",
+            image: UIImage(systemName: "doc.text.magnifyingglass"),
+            selectedImage: UIImage(systemName: "doc.text.magnifyingglass")
         )
 
         premiumVC.tabBarItem = UITabBarItem(

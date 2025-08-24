@@ -8,6 +8,8 @@
 import UIKit
 import Photos
 import AVFoundation
+import PDFKit
+import Vision
 
 class ImageCaptureService {
     static let shared = ImageCaptureService()
@@ -48,13 +50,17 @@ class ImageCaptureService {
     
     /// Performs AI-based text recognition on the given image
     func performAITextRecognition(on image: UIImage, completion: @escaping (String?) -> Void) {
-        // TODO: Implement AI-based text recognition
-        // This will replace the old OCR functionality
-        print("🤖 AI tabanlı metin tanıma başlatılıyor...")
+        print("🤖 Vision OCR ile metin tanıma başlatılıyor...")
         
-        // Placeholder implementation - replace with actual AI service
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            completion("AI metin tanıma sonucu burada olacak")
+        // Use Vision OCR for text extraction
+        VisionOCRService.shared.extractTextFromImage(image) { extractedText in
+            if let text = extractedText {
+                print("✅ Vision OCR Başarılı!")
+                completion(text)
+            } else {
+                print("❌ Vision OCR Başarısız: Görselden metin çıkarılamadı")
+                completion(nil)
+            }
         }
     }
     
@@ -63,12 +69,51 @@ class ImageCaptureService {
                                  model: String = "default",
                                  confidence: Float = 0.8,
                                  completion: @escaping (String?) -> Void) {
-        // TODO: Implement AI-based text recognition with custom parameters
-        print("🤖 AI tabanlı metin tanıma (özel ayarlar) başlatılıyor...")
+        print("🤖 Vision OCR ile metin tanıma (özel ayarlar) başlatılıyor...")
         
-        // Placeholder implementation - replace with actual AI service
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            completion("AI metin tanıma sonucu (özel ayarlar) burada olacak")
+        // Use Vision OCR with custom settings
+        let recognitionLevel: VNRequestTextRecognitionLevel = confidence > 0.7 ? .accurate : .fast
+        let usesLanguageCorrection = confidence > 0.5
+        
+        VisionOCRService.shared.extractTextFromImage(image, 
+                                                   recognitionLevel: recognitionLevel,
+                                                   usesLanguageCorrection: usesLanguageCorrection) { extractedText in
+            if let text = extractedText {
+                print("✅ Vision OCR (özel ayarlar) Başarılı!")
+                completion(text)
+            } else {
+                print("❌ Vision OCR (özel ayarlar) Başarısız")
+                completion(nil)
+            }
         }
+    }
+    
+    // MARK: - AI PDF Analysis Functions
+    
+    /// Performs AI-based analysis on the given PDF document
+    func performAIPDFAnalysis(on pdf: PDFDocument, completion: @escaping (String?) -> Void) {
+        print("🤖 PDF AI analizi başlatılıyor...")
+        
+        // Use the dedicated PDFService for better PDF handling
+        PDFService.shared.performAIAnalysis(on: pdf) { aiResult in
+            if let result = aiResult {
+                print("✅ PDF AI Analizi Başarılı!")
+                completion(result)
+            } else {
+                print("❌ PDF AI Analizi Başarısız")
+                completion(nil)
+            }
+        }
+    }
+    
+    /// Performs AI-based analysis on PDF with custom settings
+    func performAIPDFAnalysis(on pdf: PDFDocument, 
+                             model: String = "default",
+                             confidence: Float = 0.8,
+                             completion: @escaping (String?) -> Void) {
+        print("🤖 PDF AI analizi (özel ayarlar) başlatılıyor...")
+        
+        // For now, use the default implementation
+        performAIPDFAnalysis(on: pdf, completion: completion)
     }
 }

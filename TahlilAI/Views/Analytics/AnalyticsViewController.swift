@@ -11,85 +11,52 @@ import SnapKit
 class AnalyticsViewController: UIViewController {
     
     // MARK: - UI Components
-    private let contentView = UIView()
+    private let tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .systemBackground
+        tableView.separatorStyle = .singleLine
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.register(AnalysisResultCell.self, forCellReuseIdentifier: "AnalysisResultCell")
+        return tableView
+    }()
     
-    private let chartContainerView: UIView = {
+    private let emptyStateView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
-        view.layer.cornerRadius = 16
-        view.layer.masksToBounds = true
-        // Add shadow manually
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.1
-        view.layer.shadowRadius = 10
-        view.layer.shadowOffset = CGSize(width: 0, height: 4)
-        view.layer.masksToBounds = false
+        view.backgroundColor = .clear
+        view.isHidden = true
         return view
     }()
     
-    private let chartTitleLabel: UILabel = {
+    private let emptyStateImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "doc.text.magnifyingglass")
+        imageView.tintColor = .systemGray3
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
+    private let emptyStateLabel: UILabel = {
         let label = UILabel()
-        label.text = "📈 Test Trendleri"
-        label.font = .systemFont(ofSize: 18, weight: .semibold)
-        label.textColor = .label
+        label.text = "Henüz analiz yapılmamış"
+        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.textColor = .systemGray2
         label.textAlignment = .center
+        label.numberOfLines = 0
         return label
     }()
     
-    private let chartView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemGray6
-        view.layer.cornerRadius = 12
-        view.layer.masksToBounds = true
-        return view
-    }()
-    
-    private let statsContainerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .white
-        view.layer.cornerRadius = 16
-        view.layer.masksToBounds = true
-        // Add shadow manually
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.1
-        view.layer.shadowRadius = 10
-        view.layer.shadowOffset = CGSize(width: 0, height: 4)
-        view.layer.masksToBounds = false
-        return view
-    }()
-    
-    private let statsTitleLabel: UILabel = {
+    private let emptyStateSubtitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "📋 İstatistikler"
-        label.font = .systemFont(ofSize: 18, weight: .semibold)
-        label.textColor = .label
+        label.text = "İlk analizi yapmak için ana sayfaya gidin"
+        label.font = .systemFont(ofSize: 14, weight: .regular)
+        label.textColor = .systemGray3
         label.textAlignment = .center
+        label.numberOfLines = 0
         return label
     }()
     
-    private let totalTestsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Toplam Test: 0"
-        label.font = .systemFont(ofSize: 16)
-        label.textColor = .secondaryLabel
-        return label
-    }()
-    
-    private let abnormalTestsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Anormal Test: 0"
-        label.font = .systemFont(ofSize: 16)
-        label.textColor = .systemRed
-        return label
-    }()
-    
-    private let normalTestsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Normal Test: 0"
-        label.font = .systemFont(ofSize: 16)
-        label.textColor = .systemGreen
-        return label
-    }()
+    // MARK: - Properties
+    private var analysisResults: [AnalysisResult] = []
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -97,94 +64,165 @@ class AnalyticsViewController: UIViewController {
         setupNavigationBar()
         setupUI()
         setupConstraints()
-        setupActions()
+        setupTableView()
+        loadAnalysisResults()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadAnalysisResults()
     }
     
     // MARK: - Setup Methods
     private func setupNavigationBar() {
-        title = "Analiz"
+        title = "Sonuçlar"
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationController?.navigationBar.largeTitleTextAttributes = [
+            .foregroundColor: UIColor.label,
+            .font: UIFont.systemFont(ofSize: 34, weight: .bold)
+        ]
+        
+        // Add refresh button
+        let refreshButton = UIBarButtonItem(
+            image: UIImage(systemName: "arrow.clockwise"),
+            style: .plain,
+            target: self,
+            action: #selector(refreshButtonTapped)
+        )
+        navigationItem.rightBarButtonItem = refreshButton
     }
     
     private func setupUI() {
         view.backgroundColor = .systemBackground
         
-        view.addSubview(contentView)
+        view.addSubview(tableView)
+        view.addSubview(emptyStateView)
         
-        [chartContainerView, statsContainerView].forEach {
-            contentView.addSubview($0)
-        }
-        
-        [chartTitleLabel, chartView].forEach {
-            chartContainerView.addSubview($0)
-        }
-        
-        [statsTitleLabel, totalTestsLabel, abnormalTestsLabel, normalTestsLabel].forEach {
-            statsContainerView.addSubview($0)
-        }
-        
-        // Add tap gesture to open history
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openHistoryTapped))
-        view.addGestureRecognizer(tapGesture)
+        emptyStateView.addSubview(emptyStateImageView)
+        emptyStateView.addSubview(emptyStateLabel)
+        emptyStateView.addSubview(emptyStateSubtitleLabel)
     }
     
     private func setupConstraints() {
-        contentView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.leading.trailing.bottom.equalToSuperview()
+        tableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
         
-        chartContainerView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo((view.frame.height - 200) / 2 - 50)
+        emptyStateView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalToSuperview().multipliedBy(0.8)
         }
         
-        chartTitleLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(16)
-        }
-        
-        chartView.snp.makeConstraints { make in
-            make.top.equalTo(chartTitleLabel.snp.bottom).offset(12)
-            make.leading.trailing.bottom.equalToSuperview().inset(16)
-        }
-        
-        statsContainerView.snp.makeConstraints { make in
-            make.top.equalTo(chartContainerView.snp.bottom).offset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo((view.frame.height - 200) / 2 - 50)
-        }
-        
-        statsTitleLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(16)
-        }
-        
-        totalTestsLabel.snp.makeConstraints { make in
-            make.top.equalTo(statsTitleLabel.snp.bottom).offset(60)
+        emptyStateImageView.snp.makeConstraints { make in
+            make.top.equalToSuperview()
             make.centerX.equalToSuperview()
+            make.width.height.equalTo(80)
         }
         
-        abnormalTestsLabel.snp.makeConstraints { make in
-            make.top.equalTo(totalTestsLabel.snp.bottom).offset(8)
-            make.centerX.equalToSuperview()
+        emptyStateLabel.snp.makeConstraints { make in
+            make.top.equalTo(emptyStateImageView.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview()
         }
         
-        normalTestsLabel.snp.makeConstraints { make in
-            make.top.equalTo(abnormalTestsLabel.snp.bottom).offset(8)
-            make.centerX.equalToSuperview()
+        emptyStateSubtitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(emptyStateLabel.snp.bottom).offset(8)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview()
         }
     }
     
-    private func setupActions() {
-        // Add any additional actions here
+    private func setupTableView() {
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+    
+    // MARK: - Data Loading
+    private func loadAnalysisResults() {
+        // Load from UserDefaults or Core Data
+        analysisResults = AnalysisResultManager.shared.getAllAnalysisResults()
+        updateUI()
+    }
+    
+    private func updateUI() {
+        if analysisResults.isEmpty {
+            tableView.isHidden = true
+            emptyStateView.isHidden = false
+        } else {
+            tableView.isHidden = false
+            emptyStateView.isHidden = true
+            tableView.reloadData()
+        }
     }
     
     // MARK: - Actions
-    @objc private func openHistoryTapped() {
-        let historyVC = HistoryViewController()
-        let navController = UINavigationController(rootViewController: historyVC)
-        navController.modalPresentationStyle = .fullScreen
-        present(navController, animated: true)
+    @objc private func refreshButtonTapped() {
+        loadAnalysisResults()
+        
+        // Add haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+        impactFeedback.impactOccurred()
+        
+        // Show refresh animation
+        let refreshControl = UIRefreshControl()
+        refreshControl.beginRefreshing()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            refreshControl.endRefreshing()
+        }
+    }
+}
+
+// MARK: - UITableViewDataSource
+extension AnalyticsViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return analysisResults.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "AnalysisResultCell", for: indexPath) as! AnalysisResultCell
+        let result = analysisResults[indexPath.row]
+        cell.configure(with: result)
+        return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension AnalyticsViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let result = analysisResults[indexPath.row]
+        let detailVC = AnalysisDetailViewController(analysisResult: result)
+        navigationController?.pushViewController(detailVC, animated: true)
+        
+        // Add haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 100
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let result = analysisResults[indexPath.row]
+            AnalysisResultManager.shared.deleteAnalysisResult(result)
+            analysisResults.remove(at: indexPath.row)
+            
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            
+            if analysisResults.isEmpty {
+                updateUI()
+            }
+            
+            // Add haptic feedback
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+        return "Sil"
     }
 }
 
